@@ -1,6 +1,3 @@
 <resources>
     <string name="app_name">GetMeBack</string>
-    <string name="action_clear">Clear map</string>
-    <string name="action_mark">Mark location</string>
-    <string name="action_return">Return</string>
 </resources>

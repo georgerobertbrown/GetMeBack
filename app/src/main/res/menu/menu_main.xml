@@ -2,19 +2,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.gncbrown.GetMeBack.MainActivity">
+
+    <item android:title="Navigation" >
+        <menu>
+            <item
+                android:id="@+id/method_driving"
+                android:orderInCategory="100"
+                android:title="Driving"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/method_walking"
+                android:orderInCategory="100"
+                android:title="Walking"
+                app:showAsAction="never" />
+
+        </menu>
+    </item>
+
     <item
         android:id="@+id/action_clear"
         android:orderInCategory="100"
-        android:title="@string/action_clear"
+        android:title="Clear map"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_mark"
         android:orderInCategory="100"
-        android:title="@string/action_mark"
+        android:title="Mark location"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_return"
         android:orderInCategory="120"
-        android:title="@string/action_return"
+        android:title="Get me back"
         app:showAsAction="never" />
 </menu>

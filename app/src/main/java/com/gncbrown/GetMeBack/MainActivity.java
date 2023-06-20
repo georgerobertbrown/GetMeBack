@@ -88,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private enum LocationSource { Uninitialized, DestinationLocation, CurrentLocation }
     private LocationSource locationSource = LocationSource.Uninitialized;
+
+    private String navigationMethod = "d";
+
     private Double latitude = 0.00;
     private Double longitude = 0.00;
     private Double destinationLatitude = 0.00;
@@ -205,14 +208,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         int id = item.getItemId();
 
         if (id == R.id.action_clear) {
+            latitude = 0.0;
+            longitude = 0.0;
             mGoogleMap.clear();
-            if (latitude != 0.0 && longitude != 0.0) {
-                mGoogleMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(latitude, longitude))
-                        .title("Original"));
-
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 10));
-            }
             return true;
         } else if (id == R.id.action_mark) {
             locationSource = LocationSource.DestinationLocation;
@@ -221,6 +219,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (id == R.id.action_return) {
             locationSource = LocationSource.CurrentLocation;
             startLocationUpdates(true);
+            return true;
+        } else if (id == R.id.method_driving) {
+            navigationMethod = "d";
+            return true;
+        } else if (id == R.id.method_walking) {
+            navigationMethod = "w";
             return true;
         }
 
@@ -310,6 +314,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentLatitude = latitude;
             currentLongitude = longitude;
             markerLabel = "Current";
+            mGoogleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(latitude, longitude))
+                    .title(markerLabel));
 
             if (destinationLatitude != 0.0 && destinationLongitude != 0.0) {
                 LatLng destinationLatLng = new LatLng(destinationLatitude, destinationLongitude);
@@ -317,18 +324,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String url = getUrl(startingLatLng, destinationLatLng, "driving");
                 Log.d(TAG, "onLocationChanged: url=" + url);
                 new FetchURL(MainActivity.this).execute(url, "driving");
+
+
+                // Launch maps intent
+                Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
+                        navigationMethod));
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
+                startActivity(mapIntent);
             }
         } else {
             destinationLatitude = latitude;
             destinationLongitude = longitude;
             markerLabel = "Marker";
-        }
-        mGoogleMap.clear();
-        mGoogleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(latitude, longitude))
-                .title(markerLabel));
 
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 10));
+            mGoogleMap.clear();
+            mGoogleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(latitude, longitude))
+                    .title(markerLabel));
+
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 10));
+        }
 
         startLocationUpdates(false);
     }
