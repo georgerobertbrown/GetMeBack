@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">GetMeBack</string>
+    <string-array name="navigationMethods">
+        <item>Driving</item>
+        <item>Walking</item>
+    </string-array>
 </resources>

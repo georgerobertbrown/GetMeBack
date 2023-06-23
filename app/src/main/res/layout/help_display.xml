@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/screen" android:layout_width="match_parent"
+	android:layout_height="match_parent" android:orientation="vertical">
+	<TableLayout 
+		android:layout_width="fill_parent" android:layout_height="fill_parent">
+		<TableRow android:id="@+id/TableRow01" android:layout_height="wrap_content"
+			android:layout_width="wrap_content" android:gravity="left">
+			<TextView android:text="@+id/TextView01" android:id="@+id/helpText"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:padding="3dip" android:textSize="16dp" android:gravity="left">
+			</TextView>
+		</TableRow>
+
+		<TableRow>
+			<Button
+				android:id="@+id/buttonRequestPermission"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Request Permission" />
+		</TableRow>
+
+	</TableLayout>
+</ScrollView>

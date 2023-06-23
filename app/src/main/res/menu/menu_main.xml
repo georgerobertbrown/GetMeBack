@@ -3,35 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.gncbrown.GetMeBack.MainActivity">
 
-    <item android:title="Navigation" >
-        <menu>
-            <item
-                android:id="@+id/method_driving"
-                android:orderInCategory="100"
-                android:title="Driving"
-                app:showAsAction="never" />
-            <item
-                android:id="@+id/method_walking"
-                android:orderInCategory="100"
-                android:title="Walking"
-                app:showAsAction="never" />
-
-        </menu>
-    </item>
-
     <item
-        android:id="@+id/action_clear"
+        android:id="@+id/action_welcome"
         android:orderInCategory="100"
-        android:title="Clear map"
+        android:title="Welcome"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_mark"
+        android:id="@+id/action_about"
         android:orderInCategory="100"
-        android:title="Mark location"
+        android:title="About"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_return"
-        android:orderInCategory="120"
-        android:title="Get me back"
+        android:id="@+id/action_releases"
+        android:orderInCategory="100"
+        android:title="Release history"
         app:showAsAction="never" />
 </menu>
