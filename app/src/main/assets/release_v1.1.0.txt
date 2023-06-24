@@ -1,0 +1,2 @@
+1. Fixed default starting location (not Indian Ocean)<br/>
+2. Set new Home address<br/>

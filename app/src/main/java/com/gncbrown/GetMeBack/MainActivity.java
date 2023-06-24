@@ -1,7 +1,5 @@
 package com.gncbrown.GetMeBack;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -21,12 +19,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -115,7 +114,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String navigationMethod = "d";
 
-    private LatLng home = new LatLng(43.05687, -75.25245);
+    private static String destinationAddress = null;
+    private static String homeAddress = "4 Frederick Drive, New Hartford, NY";
+    public static LatLng home = new LatLng(43.05687, -75.25245);
+
     private Double latitude = 0.00;
     private Double longitude = 0.00;
     private static Double destinationLatitude = 0.00;
@@ -123,11 +125,54 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Double currentLatitude = 0.00;
     private Double currentLongitude = 0.00;
 
-    private static String destinationAddress = "???";
     private static Handler addressResultHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             destinationAddress = msg.getData().getString("address");
+            progress(false);
+            Log.d(TAG, "onLocationChanged: getAddressFromLocation, result=" + destinationAddress);
+        }
+    };
+
+    private Handler newDestinationResultHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            String newDestinationAddress = msg.getData().getString("address");
+            Double newLatitide = msg.getData().getDouble("latitude");
+            Double newLongitude = msg.getData().getDouble("longitude");
+            progress(false);
+
+
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+            dialog.setTitle("Set destination?")
+                    .setMessage(String.format("Set new destination location to %s (%s, %s).",
+                            newDestinationAddress, newLatitide, newLongitude))
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            LatLng newPoint = new LatLng(newLatitide, newLongitude);
+                            destinationLatitude = newLatitide;
+                            destinationLongitude = newLongitude;
+                            Prefs.saveDestinationToPreference(newPoint);
+
+                            locationSource = LocationSource.DestinationLocation;
+                            destinationAddress = newDestinationAddress;
+                            String markerLabel = getMarkerLabel();
+                            mGoogleMap.clear();
+                            mGoogleMap.addMarker(new MarkerOptions()
+                                    .position(newPoint)
+                                    .title(markerLabel)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, zoom));
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                        }
+                    });
+            dialog.show();
+
             Log.d(TAG, "onLocationChanged: getAddressFromLocation, result=" + destinationAddress);
         }
     };
@@ -175,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if (locationSource == LocationSource.Uninitialized) {
                             googleMap.addMarker(new MarkerOptions()
                                     .position(home)
-                                    .title("Home")
+                                    .title(homeAddress)
                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
                         }
@@ -220,6 +265,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         if (Prefs.retrieveFirstTimeFromPreference()) {
+            Prefs.saveDestinationToPreference(home);
+            Prefs.saveHomeAddressToPreference(homeAddress);
+
             Intent showHelp = new Intent(context, HelpDisplay.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "welcome");
@@ -280,10 +328,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
-        destinationAddress = "???";
+        destinationAddress = Prefs.retrieveHomeAddressFromPreference(); // null;
+        homeAddress = Prefs.retrieveHomeAddressFromPreference();
+        home = Prefs.retrieveDestinationFromPreference();
         LatLng latLng = Prefs.retrieveDestinationFromPreference();
-        if (latLng.latitude == 0.0f && latLng.longitude == 0.0f)
+        if (latLng.latitude == 0.0f && latLng.longitude == 0.0f) {
             latLng = home;
+        }
         destinationLatitude = latLng.latitude;
         destinationLongitude = latLng.longitude;
 
@@ -364,6 +415,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "changeLog");
             context.startActivity(showHelp);
+            return true;
+        } else if (id == R.id.action_set_home) {
+            setHomeDialog();
             return true;
         }
 
@@ -507,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (locationSource == LocationSource.DestinationLocation) {
             destinationLatitude = latitude;
             destinationLongitude = longitude;
-            destinationAddress = "???";
+            destinationAddress = null;
             markerLabel = getMarkerLabel();
 
             LatLng latLng = new LatLng(latitude, longitude);
@@ -524,7 +578,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mGoogleMap.clear();
 
             locationSource = LocationSource.DestinationLocation;
-            destinationAddress = "4 Frederick Dr, New Hartford, NY";
+            destinationAddress = homeAddress;
             mGoogleMap.addMarker(new MarkerOptions()
                     .position(home)
                     .title("Home")
@@ -653,34 +707,72 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setNewDestinationAlert(LatLng point) {
-        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle("Set destination?")
-                .setMessage(String.format("Set new destination location to %s, %s.",
-                                point.latitude, point.longitude))
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                        destinationLatitude = point.latitude;
-                        destinationLongitude = point.longitude;
-                        Prefs.saveDestinationToPreference(point);
+        progress(true);
+        getAddressFromLocation(point.latitude, point.longitude, context,
+                newDestinationResultHandler);
+    }
 
-                        locationSource = LocationSource.DestinationLocation;
-                        destinationAddress = "???";
-                        String markerLabel = getMarkerLabel();
-                        mGoogleMap.clear();
-                        mGoogleMap.addMarker(new MarkerOptions()
-                                .position(point)
-                                .title(markerLabel)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, zoom));
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                    }
-                });
-        dialog.show();
+    private void setHomeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Home address");
+
+        final EditText inputText = new EditText(this);
+        inputText.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(inputText);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                destinationAddress = inputText.getText().toString();
+                homeAddress = inputText.getText().toString();
+
+                progress(true);
+                home = getLocationFromAddress(destinationAddress);
+                Prefs.saveHomeAddressToPreference(destinationAddress);
+                Prefs.saveDestinationToPreference(home);
+
+                destinationLatitude = home.latitude;
+                destinationLongitude = home.longitude;
+                locationSource = LocationSource.DestinationLocation;
+                progress(false);
+
+                mGoogleMap.clear();
+                mGoogleMap.addMarker(new MarkerOptions()
+                        .position(home)
+                        .title(destinationAddress)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public LatLng getLocationFromAddress(String strAddress) {
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            // May throw an IOException
+            address = coder.getFromLocationName(strAddress, 2);
+            if (address == null) {
+                return null;
+            }
+
+            Address location = address.get(0);
+            p1 = new LatLng(location.getLatitude(), location.getLongitude() );
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return p1;
     }
 
     @Override
@@ -690,7 +782,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentPolyline = mGoogleMap.addPolyline((PolylineOptions) values[0]);
     }
 
-    private void progress(boolean show) {
+    private static void progress(boolean show) {
         if (progressBar != null)
             progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
@@ -753,6 +845,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             msg.what = 1;
                             Bundle bundle = new Bundle();
                             bundle.putString("address", result);
+                            bundle.putDouble("latitude", latitude);
+                            bundle.putDouble("longitude", longitude);
                             msg.setData(bundle);
                         } else
                             msg.what = 0;
@@ -765,7 +859,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public static String getMarkerLabel() {
-        if (!destinationAddress.equals("???"))
+        if (destinationAddress != null)
             return destinationAddress;
 
         // Start a handler to translate location to address

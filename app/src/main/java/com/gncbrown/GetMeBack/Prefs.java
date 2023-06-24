@@ -8,6 +8,7 @@ public class Prefs {
 
     private static final String PREF_KEY_DESTINATION_LATITUDE = "destinationLatitude";
     private static final String PREF_KEY_DESTINATION_LONGITUDE = "destinationLongitude";
+    private static final String PREF_KEY_DESTINATION_HOME_ADDRESS = "homeAddress";
     private static final String PREF_KEY_FIRST_TIME = "firstTime";
 
 
@@ -28,6 +29,22 @@ public class Prefs {
         SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
         editor.putFloat(PREF_KEY_DESTINATION_LATITUDE, (float) value.latitude).apply();
         editor.putFloat(PREF_KEY_DESTINATION_LONGITUDE, (float) value.longitude).apply();
+    }
+
+    public static String retrieveHomeAddressFromPreference() {
+        String homeAddress = "4 Frederick Drive, New Hartford, NY";
+        try {
+            homeAddress = MainActivity.sharedPreferences.getString(PREF_KEY_DESTINATION_HOME_ADDRESS, homeAddress);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return homeAddress;
+    }
+
+    public static void saveHomeAddressToPreference(String value) {
+        //Log.d(TAG, "saveDestinationToPreference, value=" + value);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putString(PREF_KEY_DESTINATION_HOME_ADDRESS, value).apply();
     }
 
     public static boolean retrieveFirstTimeFromPreference() {

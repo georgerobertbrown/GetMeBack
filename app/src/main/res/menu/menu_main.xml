@@ -18,4 +18,9 @@
         android:orderInCategory="100"
         android:title="Release history"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_set_home"
+        android:orderInCategory="100"
+        android:title="Set home"
+        app:showAsAction="never" />
 </menu>
