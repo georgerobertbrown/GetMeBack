@@ -1,4 +1,4 @@
-package com.gncbrown.GetMeBack;
+package com.gncbrown.GetMeBack.Utilities;
 
 import android.Manifest;
 import android.content.Context;

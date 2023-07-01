@@ -1,7 +1,7 @@
-package com.gncbrown.GetMeBack;
-
+package com.gncbrown.GetMeBack.Utilities;
 import android.content.SharedPreferences;
 
+import com.gncbrown.GetMeBack.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 
 public class Prefs {

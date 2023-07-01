@@ -2,7 +2,6 @@ package com.gncbrown.GetMeBack;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -18,9 +17,11 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
+import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Utils;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +64,7 @@ public class HelpDisplay extends Activity {
 					else
 						Toast.makeText(getApplicationContext(), "Permissions already granted.", Toast.LENGTH_SHORT).show();
 
-					Prefs.saveFirstTimeToPreference(false);
+					//////Prefs.saveFirstTimeToPreference(false);
 					finish();
 				}
 			}

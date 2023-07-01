@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal|center_vertical"
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/showApp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal|center"
+        android:src="@drawable/icon"
+        android:text="Launch app"/>
+
+    <ImageButton
+        android:id="@+id/returnToDestination"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center_horizontal|center"
+        android:src="@drawable/return_directions"
+        android:text="Return" />
+
+    <ImageButton
+        android:id="@+id/markMyLocation"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center_horizontal|center"
+        android:src="@drawable/mark_location"
+        android:text="Mark my location" />
+
+</LinearLayout>

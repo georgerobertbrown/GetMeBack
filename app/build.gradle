@@ -40,6 +40,9 @@ android {
     }
 
     namespace 'com.gncbrown.GetMeBack'
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {

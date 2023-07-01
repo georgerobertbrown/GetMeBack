@@ -3,9 +3,11 @@ package com.gncbrown.GetMeBack;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -15,6 +17,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,6 +38,9 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 
+import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
+import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.gncbrown.GetMeBack.directionhelpers.FetchURL;
 import com.gncbrown.GetMeBack.directionhelpers.TaskLoadedCallback;
 import com.google.android.gms.common.ConnectionResult;
@@ -177,6 +183,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     };
 
+    public final BroadcastReceiver updateDestinationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "updateDestinationReceiver.onReceive");
+            locationSource = LocationSource.DestinationLocation;
+            startLocationUpdates(true);
+        }
+    };
+
+    public final BroadcastReceiver goToDestinationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "goToDestinationReceiver.onReceive");
+            locationSource = LocationSource.CurrentLocation;
+            goToDestination();
+        }
+    };
+
 
     private String[] navigationMethods;
 
@@ -236,8 +260,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(getApplicationContext(), "Mark location", Toast.LENGTH_SHORT).show();
                 locationSource = LocationSource.DestinationLocation;
 
-
-                //
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -246,7 +268,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         //TODO progress(false);
                     }
                 });
-                //
             }
         });
 
@@ -291,6 +312,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .build();
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            registerReceivers(true);
 
         Prefs.saveFirstTimeToPreference(false);
     }
@@ -528,33 +552,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), zoom));
 
             if (destinationLatitude != 0.0 && destinationLongitude != 0.0) {
-                LatLng destinationLatLng = new LatLng(destinationLatitude, destinationLongitude);
-                LatLng startingLatLng = new LatLng(currentLatitude, currentLongitude);
-
-                String url = getUrl(startingLatLng, destinationLatLng, "driving");
-                Log.d(TAG, "onLocationChanged: url=" + url);
-                new FetchURL(MainActivity.this).execute(url, "driving");
-
-                AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
-                mBuilder.setTitle("Choose a navigation method to " + destinationAddress);
-                mBuilder.setSingleChoiceItems(navigationMethods, -1, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0,1);
-                        // Launch maps intent
-                        Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
-                                selectedNavigationMethod));
-                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                        mapIntent.setPackage("com.google.android.apps.maps");
-                        Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
-                        startActivity(mapIntent);
-
-                        dialogInterface.dismiss();
-                    }
-                });
-
-                AlertDialog mDialog = mBuilder.create();
-                mDialog.show();
+                goToDestination();
             } else {
                 Toast.makeText(this, "Current location not set.", Toast.LENGTH_SHORT).show();
             }
@@ -869,4 +867,50 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // In the meantime, return something
         return String.format("%s, %s", destinationLatitude, destinationLongitude);
     }
+
+    private void goToDestination() {
+        LatLng destinationLatLng = new LatLng(destinationLatitude, destinationLongitude);
+        LatLng startingLatLng = new LatLng(currentLatitude, currentLongitude);
+
+        String url = getUrl(startingLatLng, destinationLatLng, "driving");
+        Log.d(TAG, "onLocationChanged: url=" + url);
+        new FetchURL(MainActivity.this).execute(url, "driving");
+
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        mBuilder.setTitle("Choose a navigation method to " + destinationAddress);
+        mBuilder.setSingleChoiceItems(navigationMethods, -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0,1);
+                // Launch maps intent
+                Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
+                        selectedNavigationMethod));
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
+                startActivity(mapIntent);
+
+                dialogInterface.dismiss();
+            }
+        });
+
+        AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+    }
+
+    private void registerReceivers(boolean flag) {
+        Log.d("TAG", String.format("registerReceiver[%s] for %s+%s", flag, ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET,
+                ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(updateDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET),
+                    Context.RECEIVER_EXPORTED);
+            registerReceiver(goToDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET),
+                    Context.RECEIVER_EXPORTED);
+        } else {
+            unregisterReceiver(updateDestinationReceiver);
+            unregisterReceiver(goToDestinationReceiver);
+        }
+
+    }
+
 }
