@@ -17,11 +17,9 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -87,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     SupportMapFragment mapFragment;
 
     private static CoordinatorLayout mainLayout;
-    private static ProgressBar popupProgressBar;
     private static ProgressBar progressBar;
 
 
@@ -99,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             GoogleMap.MAP_TYPE_HYBRID);
     public static String[] requiredPermissions = {Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static boolean alreadyRegistered = false;
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
@@ -135,10 +133,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void handleMessage(Message msg) {
             destinationAddress = msg.getData().getString("address");
+            Prefs.saveDestinationAddressToPreference(destinationAddress);
             progress(false);
             Log.d(TAG, "onLocationChanged: getAddressFromLocation, result=" + destinationAddress);
         }
     };
+
 
     private Handler newDestinationResultHandler = new Handler() {
         @Override
@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             locationSource = LocationSource.DestinationLocation;
                             destinationAddress = newDestinationAddress;
+                            Prefs.saveDestinationAddressToPreference(destinationAddress);
                             String markerLabel = getMarkerLabel();
                             mGoogleMap.clear();
                             mGoogleMap.addMarker(new MarkerOptions()
@@ -183,7 +184,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     };
 
-    public final BroadcastReceiver updateDestinationReceiver = new BroadcastReceiver() {
+
+    private BroadcastReceiver updateDestinationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "updateDestinationReceiver.onReceive");
@@ -192,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     };
 
-    public final BroadcastReceiver goToDestinationReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver gotoDestinationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "goToDestinationReceiver.onReceive");
@@ -311,10 +313,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .addApi(LocationServices.API)
                     .build();
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+            LatLng initialLatLng = Prefs.retrieveDestinationFromPreference();
+            destinationLatitude = initialLatLng.latitude;
+            destinationLongitude = initialLatLng.longitude;
+            destinationAddress = Prefs.retrieveDestinationAddressFromPreference();
+            getAddressFromLocation(destinationLatitude, destinationLongitude, context,
+                    addressResultHandler);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            registerReceivers(true);
+        registerReceivers(true);
 
         Prefs.saveFirstTimeToPreference(false);
     }
@@ -346,13 +354,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onPause() {
         super.onPause();
+        //TODO registerReceivers(false);
         Prefs.saveDestinationToPreference(new LatLng(destinationLatitude, destinationLongitude));
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        destinationAddress = Prefs.retrieveHomeAddressFromPreference(); // null;
+        registerReceivers(true);
+
+        destinationAddress = Prefs.retrieveDestinationAddressFromPreference(); // null;
         homeAddress = Prefs.retrieveHomeAddressFromPreference();
         home = Prefs.retrieveDestinationFromPreference();
         LatLng latLng = Prefs.retrieveDestinationFromPreference();
@@ -376,6 +387,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onDestroy() {
         super.onDestroy();
+        registerReceivers(false);
 
         LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
         Prefs.saveDestinationToPreference(latLng);
@@ -629,11 +641,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
     private void  requestMultiplePermissions(){
         Log.d(TAG, "requestMultiplePermissions");
         Dexter.withActivity(this)
@@ -650,7 +657,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // check for permanent denial of any permission
                         if (report.isAnyPermissionPermanentlyDenied()) {
                             // show alert dialog navigating to Settings
-                            openSettingsDialog();
+                            Utils.openSettingsDialog(MainActivity.this, context);
                         }
                     }
                     @Override
@@ -666,29 +673,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 })
                 .onSameThread()
                 .check();
-    }
-
-    private void openSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Required Permissions");
-        builder.setMessage("This app requires location permissions. Grant them in app settings.");
-        builder.setPositiveButton("Go to Settings", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                intent.setData(uri);
-                startActivityForResult(intent, 101);
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        builder.show();
     }
 
     private void showAlert(String title, String message) {
@@ -857,7 +841,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public static String getMarkerLabel() {
-        if (destinationAddress != null)
+        if (destinationAddress != null && !destinationAddress.equals("???"))
             return destinationAddress;
 
         // Start a handler to translate location to address
@@ -899,16 +883,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void registerReceivers(boolean flag) {
-        Log.d("TAG", String.format("registerReceiver[%s] for %s+%s", flag, ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET,
+        Log.d("TAG", String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s", flag, alreadyRegistered,
+                ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(updateDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET),
-                    Context.RECEIVER_EXPORTED);
-            registerReceiver(goToDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET),
-                    Context.RECEIVER_EXPORTED);
+        if (flag) {
+                if (!alreadyRegistered) {
+                    try {
+                        registerReceiver(updateDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET),
+                                Context.RECEIVER_EXPORTED);
+                        registerReceiver(gotoDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET),
+                                Context.RECEIVER_EXPORTED);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Could not register receivers");
+                    }
+                } else {
+                    Log.i(TAG, "Receivers already registered");
+                }
+            alreadyRegistered = true;
         } else {
-            unregisterReceiver(updateDestinationReceiver);
-            unregisterReceiver(goToDestinationReceiver);
+            if (alreadyRegistered) {
+                try {
+                    unregisterReceiver(updateDestinationReceiver);
+                    unregisterReceiver(gotoDestinationReceiver);
+                } catch (Exception e) {
+                    Log.e(TAG, "Could not unregister receivers");
+                }
+            } else {
+                Log.i(TAG, "Receivers already unregistered");
+            }
+            alreadyRegistered = false;
         }
 
     }

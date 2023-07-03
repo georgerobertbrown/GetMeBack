@@ -6,6 +6,7 @@
     android:gravity="center_horizontal|center_vertical"
     android:orientation="horizontal">
 
+    <!--
     <ImageButton
         android:id="@+id/showApp"
         android:layout_width="72dp"
@@ -22,13 +23,14 @@
         android:layout_gravity="center_horizontal|center"
         android:src="@drawable/return_directions"
         android:text="Return" />
+        -->
 
     <ImageButton
         android:id="@+id/markMyLocation"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_gravity="center_horizontal|center"
-        android:src="@drawable/mark_location"
+        android:src="@drawable/icon"
         android:text="Mark my location" />
 
 </LinearLayout>

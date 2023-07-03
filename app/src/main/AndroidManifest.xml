@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gncbrown.GetMeBack">
 
+    <uses-sdk
+        android:minSdkVersion="31"
+        android:targetSdkVersion="31" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -16,7 +20,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.gncbrown.GetMeBack.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
@@ -26,12 +30,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".HelpDisplay" />
+        <activity android:name="com.gncbrown.GetMeBack.HelpDisplay" />
 
         <receiver
             android:name="com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver"
-            android:label="GetMeBack"
-            android:exported="true">
+            android:exported="true"
+            android:label="GetMeBack">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.gncbrown.GetMeBack.ACTION_WIDGET_UPDATE_FROM_ACTIVITY" />
@@ -41,6 +45,12 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/button_widget_provider" />
         </receiver>
+
+        <service
+            android:name="com.gncbrown.GetMeBack.Services.LocationService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="location" />
 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
