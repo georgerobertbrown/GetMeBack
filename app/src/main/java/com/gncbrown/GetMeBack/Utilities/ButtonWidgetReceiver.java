@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.gncbrown.GetMeBack.GoToActivity;
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Services.LocationService;
 
@@ -42,7 +43,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
 		mContext = context;
-        ButtonWidgetReceiver.appWidgetManager = appWidgetManager;
+		ButtonWidgetReceiver.appWidgetManager = appWidgetManager;
 
 		navigationMethods = context.getResources().getStringArray(R.array.navigationMethods);
 
@@ -145,7 +146,6 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 				remoteViews.setOnClickPendingIntent(R.id.markMyLocation,
 						markMyLocationPendingIntent);
 
-				/*
 
 				Intent returnToDestinationButtonWidget = new Intent(context,
 						ButtonWidgetReceiver.class);
@@ -162,6 +162,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 				remoteViews.setOnClickPendingIntent(R.id.returnToDestination,
 						returnToDestinationPendingIntent);
 
+				/*
 				Intent showAppButtonWidget = new Intent(context,
 						ButtonWidgetReceiver.class);
 				showAppButtonWidget
@@ -202,6 +203,12 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 
 	private void goToLocation(Context context) {
 		Log.d(TAG, "goToLocation " + ACTION_ACTIVITY_GO_TO_FROM_WIDGET);
+
+		Intent launchIntent = new Intent(context, GoToActivity.class);
+		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(launchIntent);
+
+		/*
 		Intent locationIntent = new Intent(context, LocationService.class);
 		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_GO_TO_DESTINATION));
 		try {
@@ -211,6 +218,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 			Log.d(TAG, msg);
 			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
 		}
+		 */
 	}
 
 	private void launchApp(Context context) {

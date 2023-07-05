@@ -12,26 +12,20 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
-import com.gncbrown.GetMeBack.MainActivity;
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 public class LocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -151,16 +145,18 @@ public class LocationService extends Service implements
                     .setNumUpdates(1)
                     .setFastestInterval(FASTEST_INTERVAL);
 
-            if (mGoogleApiClient.isConnected())
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                    mLocationRequest, this);
-            else
+                        mLocationRequest, this);
+            } else {
                 Log.d(TAG, "GoogleAPIClient not connected yet!");
+                Toast.makeText(getApplicationContext(), "GoogleAPIClient not connected yet!", Toast.LENGTH_SHORT).show();
+            }
 
             Log.d("reque", "--->>>>");
         } else {
             //progress(false);
-            if (mGoogleApiClient.isConnected())
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             Log.d("deque", "<<<<---");
         }

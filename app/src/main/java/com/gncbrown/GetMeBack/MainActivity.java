@@ -291,6 +291,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Prefs.saveDestinationToPreference(home);
             Prefs.saveHomeAddressToPreference(homeAddress);
 
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+
             Intent showHelp = new Intent(context, HelpDisplay.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "welcome");
@@ -506,7 +512,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     progress(true);
                     // TODO takes a long time
-                    mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                    if (mGoogleApiClient != null)
+                        mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
                     progress(false);
                 }
             });
@@ -630,13 +637,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .setInterval(UPDATE_INTERVAL)
                     .setNumUpdates(1)
                     .setFastestInterval(FASTEST_INTERVAL);
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                    mLocationRequest, this);
+
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                        mLocationRequest, this);
+            } else {
+                Log.d(TAG, "GoogleAPIClient not connected yet!");
+                Toast.makeText(getApplicationContext(), "GoogleAPIClient not connected yet!", Toast.LENGTH_SHORT).show();
+            }
+
             Log.d("reque", "--->>>>");
         } else {
             progress(false);
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
-                    this);
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             Log.d("deque", "<<<<---");
         }
     }
@@ -853,6 +867,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void goToDestination() {
+        Intent launchIntent = new Intent(context, GoToActivity.class);
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(launchIntent);
+
+        /*
         LatLng destinationLatLng = new LatLng(destinationLatitude, destinationLongitude);
         LatLng startingLatLng = new LatLng(currentLatitude, currentLongitude);
 
@@ -880,6 +899,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         AlertDialog mDialog = mBuilder.create();
         mDialog.show();
+         */
     }
 
     private void registerReceivers(boolean flag) {
