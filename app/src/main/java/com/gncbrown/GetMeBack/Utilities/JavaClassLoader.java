@@ -1,5 +1,6 @@
 package com.gncbrown.GetMeBack.Utilities;
 
+import android.content.Context;
 import android.util.Log;
 
 public class JavaClassLoader extends ClassLoader {
@@ -8,7 +9,6 @@ public class JavaClassLoader extends ClassLoader {
 	public Class getClass(String classBinName){
 		Class loadedMyClass = null;
 		try {
-			
 			// Create a new JavaClassLoader 
 			ClassLoader classLoader = this.getClass().getClassLoader();
 			
@@ -21,6 +21,25 @@ public class JavaClassLoader extends ClassLoader {
 			e.printStackTrace();
 		}
 		
+		return loadedMyClass;
+	}
+
+	public Class getClass(Context context) {
+		String packageName = context.getPackageName();
+		Class loadedMyClass = null;
+		try {
+			// Create a new JavaClassLoader
+			ClassLoader classLoader = this.getClass().getClassLoader();
+
+			// Load the target class using its binary name
+			loadedMyClass = classLoader.loadClass(packageName);
+			Log.d(TAG, "Loaded class name: " + loadedMyClass.getName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return loadedMyClass;
 	}
 }

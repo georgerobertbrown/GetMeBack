@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gncbrown.GetMeBack">
+    package="com.gncbrown.GetMeBack" >
 
     <uses-sdk
         android:minSdkVersion="31"
@@ -17,13 +17,15 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.gncbrown.GetMeBack.GoToActivity"
+            android:exported="false" />
         <activity
             android:name="com.gncbrown.GetMeBack.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,7 +37,7 @@
         <receiver
             android:name="com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver"
             android:exported="true"
-            android:label="GetMeBack">
+            android:label="GetMeBack" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.gncbrown.GetMeBack.ACTION_WIDGET_UPDATE_FROM_ACTIVITY" />
