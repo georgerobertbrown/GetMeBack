@@ -21,8 +21,9 @@
         android:id="@+id/returnToDestination"
         android:layout_width="72dp"
         android:layout_height="72dp"
+        android:background="@color/black"
         android:layout_gravity="center_horizontal|center"
-        android:src="@drawable/return_directions"
+        android:src="@drawable/navigate_map_black"
         android:text="Return" />
 
     <ImageButton
@@ -30,7 +31,8 @@
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_gravity="center_horizontal|center"
-        android:src="@drawable/mark_location"
+        android:background="@color/black"
+        android:src="@drawable/pushpin_red_black"
         android:text="Mark my location" />
 
 </LinearLayout>

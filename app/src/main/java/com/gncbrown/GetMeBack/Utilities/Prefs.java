@@ -6,14 +6,18 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class Prefs {
 
+    private static final String TAG = "Prefs";
+
     private static final String PREF_KEY_DESTINATION_LATITUDE = "destinationLatitude";
     private static final String PREF_KEY_DESTINATION_LONGITUDE = "destinationLongitude";
-    private static final String PREF_KEY_DESTINATION_HOME_ADDRESS = "homeAddress";
     private static final String PREF_KEY_DESTINATION_ADDRESS = "destinationAddress";
+    private static final String PREF_KEY_HOME_ADDRESS = "homeAddress";
+    private static final String PREF_KEY_HOME_LATITUDE = "homeLatitude";
+    private static final String PREF_KEY_HOME_LONGITUDE = "homeLongitude";
     private static final String PREF_KEY_FIRST_TIME = "firstTime";
 
 
-    public static LatLng retrieveDestinationFromPreference() {
+    public static LatLng retrieveDestinationLocationFromPreference() {
         float latitude = 0.0f;
         float longitude = 0.0f;
         try {
@@ -25,11 +29,16 @@ public class Prefs {
         return new LatLng(latitude, longitude);
     }
 
-    public static void saveDestinationToPreference(LatLng value) {
-        //Log.d(TAG, "saveDestinationToPreference, value=" + value);
+    public static void saveDestinationLocationToPreference(LatLng value) {
+        //Log.d(TAG, "saveDestinationLocationToPreference, value=" + value);
         SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putFloat(PREF_KEY_DESTINATION_LATITUDE, (float) value.latitude).apply();
-        editor.putFloat(PREF_KEY_DESTINATION_LONGITUDE, (float) value.longitude).apply();
+        if (value != null) {
+            editor.putFloat(PREF_KEY_DESTINATION_LATITUDE, (float) value.latitude).apply();
+            editor.putFloat(PREF_KEY_DESTINATION_LONGITUDE, (float) value.longitude).apply();
+        } else {
+            editor.putFloat(PREF_KEY_DESTINATION_LATITUDE, 0.0f).apply();
+            editor.putFloat(PREF_KEY_DESTINATION_LONGITUDE, 0.0f).apply();
+        }
     }
 
     public static String retrieveDestinationAddressFromPreference() {
@@ -48,20 +57,44 @@ public class Prefs {
         editor.putString(PREF_KEY_DESTINATION_ADDRESS, value).apply();
     }
 
-    public static String retrieveHomeAddressFromPreference() {
-        String homeAddress = "4 Frederick Drive, New Hartford, NY";
+    public static LatLng retrieveHomeLocationFromPreference() {
+        float latitude = 0.0f;
+        float longitude = 0.0f;
         try {
-            homeAddress = MainActivity.sharedPreferences.getString(PREF_KEY_DESTINATION_HOME_ADDRESS, homeAddress);
+            latitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_HOME_LATITUDE, 0.0f);
+            longitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_HOME_LONGITUDE, 0.0f);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return homeAddress;
+        return new LatLng(latitude, longitude);
+    }
+
+    public static void saveHomeLocationToPreference(LatLng value) {
+        //Log.d(TAG, "saveDestinationToPreference, value=" + value);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        if (value != null) {
+            editor.putFloat(PREF_KEY_HOME_LATITUDE, (float) value.latitude).apply();
+            editor.putFloat(PREF_KEY_HOME_LONGITUDE, (float) value.longitude).apply();
+        } else {
+            editor.putFloat(PREF_KEY_HOME_LATITUDE, 0.0f).apply();
+            editor.putFloat(PREF_KEY_HOME_LONGITUDE, 0.0f).apply();
+        }
     }
 
     public static void saveHomeAddressToPreference(String value) {
-        //Log.d(TAG, "saveDestinationToPreference, value=" + value);
+        //Log.d(TAG, "saveHomeAddressToPreference, value=" + value);
         SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putString(PREF_KEY_DESTINATION_HOME_ADDRESS, value).apply();
+        editor.putString(PREF_KEY_HOME_ADDRESS, value).apply();
+    }
+
+    public static String retrieveHomeAddressFromPreference() {
+        String home = "???";
+        try {
+            home = MainActivity.sharedPreferences.getString(PREF_KEY_HOME_ADDRESS, "???");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return home;
     }
 
     public static boolean retrieveFirstTimeFromPreference() {

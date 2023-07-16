@@ -32,7 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.gncbrown.GetMeBack.HelpDisplay" />
+        <activity android:name="com.gncbrown.GetMeBack.HelpActivity" />
 
         <receiver
             android:name="com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver"

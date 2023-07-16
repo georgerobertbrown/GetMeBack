@@ -28,7 +28,7 @@ public class GoToActivity extends AppCompatActivity {
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
 
-        LatLng initialLatLng = Prefs.retrieveDestinationFromPreference();
+        LatLng initialLatLng = Prefs.retrieveDestinationLocationFromPreference();
         destinationLatitude = initialLatLng.latitude;
         destinationLongitude = initialLatLng.longitude;
         destinationAddress = Prefs.retrieveDestinationAddressFromPreference();

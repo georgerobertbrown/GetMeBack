@@ -192,8 +192,8 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		Intent locationIntent = new Intent(context, LocationService.class);
 		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_GET_LOCATION));
 		try {
-			context.startService(locationIntent);
-			//context.startForegroundService(locationIntent);
+			context.startForegroundService(locationIntent);
+			//context.startService(locationIntent);
 		} catch (Exception e) {
 			String msg = "setLocation: Could not start LocationService: " + e.getMessage();
 			Log.d(TAG, msg);

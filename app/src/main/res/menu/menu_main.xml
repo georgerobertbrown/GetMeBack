@@ -23,4 +23,14 @@
         android:orderInCategory="100"
         android:title="Set home"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_restore_home"
+        android:orderInCategory="100"
+        android:title="Restore home"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_values"
+        android:orderInCategory="100"
+        android:title="Values"
+        app:showAsAction="never" />
 </menu>

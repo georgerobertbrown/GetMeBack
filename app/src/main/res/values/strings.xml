@@ -1,14 +1,17 @@
+<!DOCTYPE resources [
+    <!ENTITY appname "GetMeBack!">
+    <!ENTITY version "1.2.0">
+    ]>
+
 <resources>
-    <string name="app_name">GetMeBack</string>
+    <string name="app_name">GetMeBack!</string>
+    <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
+
     <string-array name="navigationMethods">
         <item>Driving</item>
         <item>Walking</item>
     </string-array>
-    <string name="appwidget_text">EXAMPLE</string>
-    <string name="configure">Configure</string>
-    <string name="add_widget">Add widget</string>
-    <string name="app_widget_description">This is an app widget description</string>
 
     <string name="ACTION_GET_LOCATION">com.gncbrown.GetMeBack.ACTION_GET_LOCATION</string>
     <string name="ACTION_GO_TO_DESTINATION">com.gncbrown.GetMeBack.ACTION_GO_TO_DESTINATION</string>

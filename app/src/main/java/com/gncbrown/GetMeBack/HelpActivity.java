@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
-import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 
 import java.io.IOException;
@@ -28,8 +26,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HelpDisplay extends Activity {
-    private static final String TAG = HelpDisplay.class.getSimpleName();
+public class HelpActivity extends Activity {
+    private static final String TAG = HelpActivity.class.getSimpleName();
 
     private String helpType = "help";
 
@@ -43,15 +41,15 @@ public class HelpDisplay extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//		Log.d(TAG, "onCreate:HelpDisplay");
-        context = MainActivity.context;
+//		Log.d(TAG, "onCreate:HelpActivity");
+        context = MainActivity.mContext;
         try {
             helpType = getIntent().getStringExtra("type");
         } catch (Exception e) {
             helpType = "help";
         }
 //		Log.d(TAG, "help type=" + helpType);
-        setContentView(R.layout.help_display);
+        setContentView(R.layout.activity_help);
 
         TextView helpText = findViewById(R.id.helpText);
         Context context = helpText.getContext();
@@ -62,16 +60,16 @@ public class HelpDisplay extends Activity {
             public void onClick(View v) {
                 if (helpType.equals("welcome")) {
                     if (!Utils.hasPermissions(MainActivity.requiredPermissions, context))
-                        ActivityCompat.requestPermissions(HelpDisplay.this, MainActivity.requiredPermissions, permissionsCode);
+                        ActivityCompat.requestPermissions(HelpActivity.this, MainActivity.requiredPermissions, permissionsCode);
                     else
                         Toast.makeText(getApplicationContext(), "Permissions already granted.", Toast.LENGTH_SHORT).show();
 
-                    //////Prefs.saveFirstTimeToPreference(false);
-                    finish();
+                    //finish();
                 }
             }
         });
-        if (!helpType.equals("welcome") || Utils.hasPermissions(MainActivity.requiredPermissions, context))
+        if (//!helpType.equals("welcome") ||
+            Utils.hasPermissions(MainActivity.requiredPermissions, context))
             requestPermission.setVisibility(View.GONE);
 
         String releaseNotes = "";

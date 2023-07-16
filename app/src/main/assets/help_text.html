@@ -1,5 +1,45 @@
-<h1>About</h1>
-
+<h2>About</h2>
 <br>Version: 1.2.0
 <br>Developer: George Brown
 <br>Inspiration: Cindy Brown
+
+<h2>Tips and suggestions</h2>
+<h3>General</h3>
+When dealing with Android's location service, getting the current location or the address from the location can take some time. You may notice a delay in acquisition until the operation is complete.
+
+<h3>Getting location</h3>
+Tap the pushpin icon <img
+        src="pushpin_red.png"> to get the current location. The location request will be processed in background. When the location is acquired, a separate background task will be started to get the address (located below the icons). The address will be updated automatically.
+
+<h3>Returning to the destination</h3>
+Tap the map icon <img
+        src="navigate_map.png"> to request Google turn-by-turn directions. A dialog will appear requesting the navigation method: either
+<i>driving</i> or <i></i>walking</i>.
+
+NOTE:
+<li>it may take some time to get the current location and navigation directions</li>
+<li>if the current location and destination are too close together, it may result in a Google
+    navigation error
+</li>
+
+<h3>Setting destination address</h3>
+Tap the address text field to enter a new address. The keyboard on WearOS devices are tiny so be patient. Tap the check mark to enter the new address. The location will be acquired from the address.
+
+<h2>Home screen widget</h2>
+A Home screen widget can be created to quickly set the current location and return to the destination. Steps:
+<ol>
+    <li>long-press on the Home screen</li>
+    <li>select <i>Widgets</i></li>
+    <li>tap <i>GetMeBack</i></li>
+    <li>press and hold the widget preview icon <br><img src="widget_preview.png"></li>
+    <li>drag the widget to the Home screen</li>
+</ol>
+
+<h3>Set destination</h3>
+Tap the <img src="pushpin_red.png"> icon to set your current location as destination location. This will be the location GetMeBack will return to when the <i>Return to destination</i>i> button is selected.
+
+<h3>Return to destination</h3>
+Tap the <img src="navigate_map.png"> icon to launch Google's turn-by-turn navigation. It will prompt for the navigation mode, either driving or walking.
+
+<h3>Main screen</h3>
+Tapping on the main screen will prompt to set that as the new destination. It will display the geolocation and the street address. Tap OK to set as the new destination or Cancel.

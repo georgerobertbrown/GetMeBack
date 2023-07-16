@@ -1,4 +1,4 @@
-package com.gncbrown.GetMeBack.Services;
+package com.gncbrown.GetMeBack.Utilities;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import com.gncbrown.GetMeBack.R;
-import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -30,7 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 public class LocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
-    private static final String TAG = LocationService.class.getSimpleName();
+    private static final String TAG = "LocationService";
 
     private static String[] navigationMethods;
 
@@ -43,7 +42,7 @@ public class LocationService extends Service implements
 
 
     public LocationService() {
-        Log.d(TAG, "onStart:LocationService");
+        Log.d(TAG, "onStart:LocationServiceX");
     }
 
     private Double latitude = 0.00;
@@ -163,7 +162,7 @@ public class LocationService extends Service implements
     }
 
     private void requestMultiplePermissions() {
-        Log.d(TAG, "LocationService.requestMultiplePermissions");
+        Log.d(TAG, "requestMultiplePermissions");
         /*
         Dexter.withActivity(getApplicationContext())
                 .withPermissions(
@@ -200,6 +199,7 @@ public class LocationService extends Service implements
 
     @Override
     public void onConnected(Bundle bundle) {
+        Log.d(TAG, "onConnected");
         startLocationUpdates(true);
 
         LoadActivity activityLoader = new LoadActivity();
@@ -232,8 +232,8 @@ public class LocationService extends Service implements
         longitude = location.getLongitude();
         String msg = "Updated location: " + latitude + "," + longitude;
         Log.d(TAG, "onLocationChanged: " + msg);
-
         Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
+
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
