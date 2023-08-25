@@ -4,32 +4,32 @@
     tools:context="com.gncbrown.GetMeBack.MainActivity">
 
     <item
-        android:id="@+id/action_welcome"
+        android:id="@+id/actionWelcome"
         android:orderInCategory="100"
         android:title="Welcome"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_about"
+        android:id="@+id/actionAbout"
         android:orderInCategory="100"
-        android:title="About"
+        android:title="Help"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_releases"
+        android:id="@+id/actionReleases"
         android:orderInCategory="100"
         android:title="Release history"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_set_home"
+        android:id="@+id/actionSetHome"
         android:orderInCategory="100"
         android:title="Set home"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_restore_home"
+        android:id="@+id/actionRestoreHome"
         android:orderInCategory="100"
         android:title="Restore home"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_values"
+        android:id="@+id/actionValues"
         android:orderInCategory="100"
         android:title="Values"
         app:showAsAction="never" />

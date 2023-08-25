@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static Double destinationLongitude = 0.00;
     private Double currentLatitude = 0.00;
     private Double currentLongitude = 0.00;
+    private long lastMarkerTime = System.currentTimeMillis();;
 
     private static Handler addressResultHandler = new Handler() {
         @Override
@@ -437,31 +438,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        if (id == R.id.action_about) {
+        if (id == R.id.actionAbout) {
             Intent showHelp = new Intent(mContext, HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "help");
             mContext.startActivity(showHelp);
             return true;
-        } else if (id == R.id.action_welcome) {
+        } else if (id == R.id.actionWelcome) {
             Intent showHelp = new Intent(mContext, HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "welcome");
             mContext.startActivity(showHelp);
             return true;
-        } else if (id == R.id.action_releases) {
+        } else if (id == R.id.actionReleases) {
             Intent showHelp = new Intent(mContext, HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "changeLog");
             mContext.startActivity(showHelp);
             return true;
-        } else if (id == R.id.action_set_home) {
+        } else if (id == R.id.actionSetHome) {
             setHomeDialog();
             return true;
-        } else if (id == R.id.action_restore_home) {
+        } else if (id == R.id.actionRestoreHome) {
             restoreHome();
             return true;
-        } else if (id == R.id.action_values) {
+        } else if (id == R.id.actionValues) {
             LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
             String destinationAddress = Prefs.retrieveDestinationAddressFromPreference();
             LatLng homeLatLng = Prefs.retrieveHomeLocationFromPreference();
@@ -488,7 +489,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
+                long markerTime = System.currentTimeMillis();
+                if (markerTime - lastMarkerTime < 500.0) {
+                    Log.d(TAG, "double click detected!");
+                }
                 marker.setTitle(getMarkerLabel());
+                lastMarkerTime = System.currentTimeMillis();
                 return false;
             }
         });

@@ -18,21 +18,25 @@
         -->
 
     <ImageButton
+        android:id="@+id/markMyLocation"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center_horizontal|center"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="2dp"
+        android:background="@color/black"
+        android:src="@drawable/pushpin_red_black"
+        android:text="Mark my location" />
+
+    <ImageButton
         android:id="@+id/returnToDestination"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:background="@color/black"
         android:layout_gravity="center_horizontal|center"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="2dp"
         android:src="@drawable/navigate_map_black"
         android:text="Return" />
-
-    <ImageButton
-        android:id="@+id/markMyLocation"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_gravity="center_horizontal|center"
-        android:background="@color/black"
-        android:src="@drawable/pushpin_red_black"
-        android:text="Mark my location" />
 
 </LinearLayout>
