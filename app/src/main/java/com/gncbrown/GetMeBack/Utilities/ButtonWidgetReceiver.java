@@ -7,6 +7,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -18,37 +20,30 @@ import com.gncbrown.GetMeBack.Services.LocationService;
 public class ButtonWidgetReceiver extends AppWidgetProvider {
 	private static final String TAG = ButtonWidgetReceiver.class.getSimpleName();
 
-	private static Context mContext;
-
-	public static final String WIDGET_IDS_KEY = "com.gncbrown.GetMeBack.mywidgetproviderwidgetids";
-	public static final String WIDGET_DATA_KEY = "com.gncbrown.GetMeBack.mywidgetproviderwidgetdata";
 	public static final String ACTION_WIDGET_UPDATE_FROM_ACTIVITY = "com.gncbrown.GetMeBack.ACTION_WIDGET_UPDATE_FROM_ACTIVITY";
 	public static final String ACTION_ACTIVITY_UPDATE_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_UPDATE_FROM_WIDGET";
 	public static final String ACTION_ACTIVITY_GO_TO_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_GO_TO_FROM_WIDGET";
 	public static final String ACTION_ACTIVITY_LAUNCH_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_LAUNCH_FROM_WIDGET";
 	public static final String ACTION_BUTTON_SELECTED = "buttonSelected";
-	public static final String ACTION_WIDGET_WHICH_CHECKED = "ACTION_WIDGET_WHICH_CHECKED";
-	public static final String ACTION_WIDGET_ENABLED = "ACTION_WIDGET_ENABLED";
 	public static final String ACTION_MARK_LOCATION = "MarkMyLocation";
 	public static final String ACTION_RETURN_TO_DESTINATION = "ReturnToDestination";
 	public static final String ACTION_SHOW_APP = "ShowApp";
 
-	private String[] navigationMethods;
-
+	public static final int REQ_CODE = 13;
 
 
 	private static AppWidgetManager appWidgetManager = null;
 	private int[] appWidgetIds = null;
 
+	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 						 int[] appWidgetIds) {
-		mContext = context;
+		super.onUpdate(context, appWidgetManager, appWidgetIds);
 		ButtonWidgetReceiver.appWidgetManager = appWidgetManager;
-
-		navigationMethods = context.getResources().getStringArray(R.array.navigationMethods);
 
 		updateWidgetViews(context);
 		saveWidgetViews(context);
+		//showMessage(context, "ButtonWidgetReceiver.onUpdate");
 	}
 
 	@Override
@@ -67,39 +62,49 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		super.onReceive(context, intent);
 		String action = intent.getAction();
 
 		String message = "onReceive, action=" + action;
 		Log.d(TAG, message);
 
 		// v1.5 fix that doesn't call onDelete Action
-		if (action.equals(AppWidgetManager.ACTION_APPWIDGET_DELETED)) {
-			final int appWidgetId = intent.getExtras().getInt(
-					AppWidgetManager.EXTRA_APPWIDGET_ID,
-					AppWidgetManager.INVALID_APPWIDGET_ID);
-			if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-				this.onDeleted(context, new int[] { appWidgetId });
-			}
-		} else if (action.equals(AppWidgetManager.ACTION_APPWIDGET_ENABLED)) {
-		} else if (action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)) {
-			String selectedButton = intent.getExtras().getString(
-					ACTION_BUTTON_SELECTED);
-			if (intent.hasExtra(ACTION_BUTTON_SELECTED)) {
-				//String selectedButton = intent.getExtras().getString(
-				//		ACTION_BUTTON_SELECTED);
-				Log.d(TAG, "ACTION_APPWIDGET_UPDATE, selectedButton="
-						+ selectedButton);
-
-				if (selectedButton.equals(ACTION_MARK_LOCATION)) {
-					setLocation(context);
-				} else if (selectedButton.equals(ACTION_RETURN_TO_DESTINATION)) {
-					goToLocation(context);
-				} else if (selectedButton.equals((ACTION_SHOW_APP))) {
-					launchApp(context);
+		switch (action) {
+			case AppWidgetManager.ACTION_APPWIDGET_DELETED:
+				final int appWidgetId = intent.getExtras().getInt(
+						AppWidgetManager.EXTRA_APPWIDGET_ID,
+						AppWidgetManager.INVALID_APPWIDGET_ID);
+				if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+					this.onDeleted(context, new int[]{appWidgetId});
 				}
-			}
-		} else {
-			Log.d(TAG, "...skipping unknown action");
+				break;
+			case AppWidgetManager.ACTION_APPWIDGET_ENABLED:
+				break;
+			case AppWidgetManager.ACTION_APPWIDGET_UPDATE:
+				String selectedButton = intent.getExtras().getString(
+						ACTION_BUTTON_SELECTED);
+				if (intent.hasExtra(ACTION_BUTTON_SELECTED)) {
+					//String selectedButton = intent.getExtras().getString(
+					//		ACTION_BUTTON_SELECTED);
+					Log.d(TAG, "ACTION_APPWIDGET_UPDATE, selectedButton="
+							+ selectedButton);
+
+					switch (selectedButton) {
+						case ACTION_MARK_LOCATION:
+							setLocation(context);
+							break;
+						case ACTION_RETURN_TO_DESTINATION:
+							goToLocation(context);
+							break;
+						case (ACTION_SHOW_APP):
+							launchApp(context);
+							break;
+					}
+				}
+				break;
+			default:
+				Log.d(TAG, "...skipping unknown action");
+				break;
 		}
 
 		super.onReceive(context, intent);
@@ -162,23 +167,6 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 				remoteViews.setOnClickPendingIntent(R.id.returnToDestination,
 						returnToDestinationPendingIntent);
 
-				/*
-				Intent showAppButtonWidget = new Intent(context,
-						ButtonWidgetReceiver.class);
-				showAppButtonWidget
-						.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-				showAppButtonWidget.putExtra(
-						ACTION_BUTTON_SELECTED, ACTION_SHOW_APP);
-				showAppButtonWidget.putExtra(
-						AppWidgetManager.EXTRA_APPWIDGET_IDS, allWidgetIds);
-
-				PendingIntent showAppPendingIntent = PendingIntent.getBroadcast(
-						context, 2, showAppButtonWidget,
-						PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-				remoteViews.setOnClickPendingIntent(R.id.showApp,
-						showAppPendingIntent);
-				 */
-
 				appWidgetManager.updateAppWidget(widgetId, remoteViews);
 			}
 		} else {
@@ -193,11 +181,17 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_GET_LOCATION));
 		try {
 			context.startForegroundService(locationIntent);
-			//context.startService(locationIntent);
+			Toast.makeText(context, "Requesting location", Toast.LENGTH_SHORT).show();
 		} catch (Exception e) {
-			String msg = "setLocation: Could not start LocationService: " + e.getMessage();
-			Log.d(TAG, msg);
-			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+			try {
+				context.startService(locationIntent);
+				Utils.makeNotification(context, "Location", "Requesting location", REQ_CODE);
+			} catch (Exception e1) {
+				String msg = "setLocation: Could not start LocationService: " + e1.getMessage();
+				Log.d(TAG, msg);
+				showMessage(context, msg);
+				Utils.makeNotification(context, "Location", msg, REQ_CODE);
+			}
 		}
 	}
 
@@ -207,18 +201,6 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		Intent launchIntent = new Intent(context, GoToActivity.class);
 		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(launchIntent);
-
-		/*
-		Intent locationIntent = new Intent(context, LocationService.class);
-		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_GO_TO_DESTINATION));
-		try {
-			context.startService(locationIntent);
-		} catch (Exception e) {
-			String msg = "goToLocation: Could not start LocationService: " + e.getMessage();
-			Log.d(TAG, msg);
-			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-		}
-		 */
 	}
 
 	private void launchApp(Context context) {
@@ -230,7 +212,17 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		} catch (Exception e) {
 			String msg = "launchApp: Could not start LocationService: " + e.getMessage();
 			Log.d(TAG, msg);
-			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+			showMessage(context, msg);
 		}
+	}
+
+	private void showMessage(Context context, String msg) {
+		Handler handler = new Handler(Looper.getMainLooper());
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+			}
+		});
 	}
 }

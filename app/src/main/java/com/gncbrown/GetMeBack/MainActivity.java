@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             GoogleMap.MAP_TYPE_SATELLITE,
             GoogleMap.MAP_TYPE_HYBRID);
     public static String[] requiredPermissions = {Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION};
+            Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.POST_NOTIFICATIONS};
     private static boolean alreadyRegistered = false;
 
     private GoogleApiClient mGoogleApiClient;
@@ -118,8 +118,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String navigationMethod = "d";
 
     private static String destinationAddress = null;
-    private static String homeAddress = "4 Frederick Drive, New Hartford, NY";
-    public static LatLng home = new LatLng(43.05687, -75.25245);
+    private static String homeAddress = "1650 Amphitheatre Pkwy, Mountain View, CA, 94043"; //"4 Frederick Drive, New Hartford, NY";
+    public static LatLng home = new LatLng(37.4219983, -122.084); //new LatLng(43.05687, -75.25245);
 
     private Double latitude = 0.00;
     private Double longitude = 0.00;
@@ -704,9 +704,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void  requestMultiplePermissions() {
         Log.d(TAG, "requestMultiplePermissions");
         Dexter.withActivity(this)
-                .withPermissions(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION)
+                .withPermissions(requiredPermissions)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport report) {

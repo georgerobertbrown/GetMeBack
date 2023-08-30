@@ -20,7 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import com.gncbrown.GetMeBack.R;
+import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
 import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -40,7 +42,6 @@ public class LocationService extends Service implements
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 2 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
-
 
     public LocationService() {
         Log.d(TAG, "onStart:LocationService");
@@ -230,10 +231,12 @@ public class LocationService extends Service implements
     public void onLocationChanged(@NonNull Location location) {
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        String msg = "Updated location: " + latitude + "," + longitude;
+        String msg = "Acquired location: " + latitude + ", " + longitude;
         Log.d(TAG, "onLocationChanged: " + msg);
 
         Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
+
+        Utils.makeNotification(getApplicationContext(), "Acquire Location", msg, ButtonWidgetReceiver.REQ_CODE);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 

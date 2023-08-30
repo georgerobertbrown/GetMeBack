@@ -6,26 +6,15 @@
     android:gravity="center_horizontal|center_vertical"
     android:orientation="horizontal">
 
-    <!--
-    <ImageButton
-        android:id="@+id/showApp"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_weight="1"
-        android:layout_gravity="center_horizontal|center"
-        android:src="@drawable/icon"
-        android:text="Launch app"/>
-        -->
-
     <ImageButton
         android:id="@+id/markMyLocation"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_gravity="center_horizontal|center"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="2dp"
         android:layout_marginLeft="2dp"
         android:background="@color/black"
-        android:src="@drawable/pushpin_red_black"
+        android:src="@drawable/pushpin_red_nobackground"
         android:text="Mark my location" />
 
     <ImageButton
@@ -34,9 +23,9 @@
         android:layout_height="72dp"
         android:background="@color/black"
         android:layout_gravity="center_horizontal|center"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
-        android:src="@drawable/navigate_map_black"
+        android:src="@drawable/navigate_map_nobackground"
         android:text="Return" />
 
 </LinearLayout>

@@ -6,24 +6,35 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import com.gncbrown.GetMeBack.MainActivity;
+import com.gncbrown.GetMeBack.R;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -134,6 +145,44 @@ public class Utils {
             }
         });
         builder.show();
+    }
+
+    public static void makeNotification(Context context, String title,
+                                        String message, int reqCode) {
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat(
+                "EEEE, dd MMMM yyyy hh:mm.SSS");
+        String dateString = formatter.format(date);
+        String notificationMessage = "Date: " + dateString +  "\n" + message;
+        Intent intent = new Intent(context, MainActivity.class);
+        showNotification(context, title, notificationMessage, intent, reqCode);
+    }
+
+    public static void showNotification(Context context, String title, String message, Intent intent, int reqCode) {
+        intent.putExtra("From", title);
+        intent.putExtra("Message", message);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, reqCode, intent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+        String channelId = context.getResources().getString(R.string.app_name); //"channel_name";
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(android.R.drawable.ic_dialog_map)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
+                .setTicker(title)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setContentIntent(pendingIntent);
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Channel Name";// The user-visible name of the channel.
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+        notificationManager.notify(reqCode, notificationBuilder.build()); // 0 is the request code, it should be unique id
+
+        Log.d("showNotification", "showNotification: " + reqCode);
     }
 
 }

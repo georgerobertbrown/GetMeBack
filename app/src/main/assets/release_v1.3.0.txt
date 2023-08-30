@@ -1,0 +1,2 @@
+1. Improved widget handling<br/>
+2. Implement location notifications
