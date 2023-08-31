@@ -756,6 +756,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 progress(true);
                 home = Utils.getLocationFromAddress(destinationAddress, mContext);
                 Prefs.saveHomeAddressToPreference(destinationAddress);
+                Prefs.saveHomeLocationToPreference(home);
                 Prefs.saveDestinationLocationToPreference(home);
 
                 destinationLatitude = home.latitude;
