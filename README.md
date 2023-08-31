@@ -8,7 +8,7 @@ When the app is launched the first time, it will request location permission. *P
 ## General
 
 ###Getting location
-Tap the pushpin icon ![Push pin](app/src/main/res/drawable/pushpin_red_nobackground.png) to get the current location. The location request will be processed in background. When the location is acquired, a separate background task will be started to get the address (located below the icons). The address will be updated automatically.
+Tap the pushpin icon ![Push pin](app/src/main/res/drawable/pushpin_red.png) to get the current location. The location request will be processed in background. When the location is acquired, a separate background task will be started to get the address (located below the icons). The address will be updated automatically.
 
 ### Returning to the destination
 Tap the map icon ![Navigate](app/src/main/res/drawable/navigate_map_nobackground.png) to request Google turn-by-turn directions. A dialog will appear requesting the navigation method: either *driving* or *walking*.
