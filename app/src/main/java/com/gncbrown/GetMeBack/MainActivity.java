@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Polyline currentPolyline;
 
 
-    private float zoom = 15.0f; //8.0f; // 10
+    private float ZOOM = 15.0f; //8.0f; // 10
     private GoogleMap mGoogleMap;
 
     private enum LocationSource {Uninitialized, DestinationLocation, CurrentLocation}
@@ -165,12 +165,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             destinationAddress = newDestinationAddress;
                             Prefs.saveDestinationAddressToPreference(destinationAddress);
                             String markerLabel = getMarkerLabel();
-                            mGoogleMap.clear();
-                            mGoogleMap.addMarker(new MarkerOptions()
-                                    .position(newPoint)
-                                    .title(markerLabel)
-                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, zoom));
+                            animateMap(newPoint, markerLabel);
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -245,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     .position(home)
                                     .title(homeAddress)
                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
+                            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home, ZOOM));
                         }
                     }
                 });
@@ -358,8 +353,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onPause() {
         super.onPause();
-        //TODO registerReceivers(false);
-        Prefs.saveDestinationLocationToPreference(new LatLng(destinationLatitude, destinationLongitude));
+        registerReceivers(false);
+        // TODO Should this be here?
+        //Prefs.saveDestinationLocationToPreference(new LatLng(destinationLatitude, destinationLongitude));
     }
 
     @Override
@@ -369,22 +365,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         destinationAddress = Prefs.retrieveDestinationAddressFromPreference(); // null;
         homeAddress = Prefs.retrieveHomeAddressFromPreference();
-        home = Prefs.retrieveDestinationLocationFromPreference();
+        home = Prefs.retrieveHomeLocationFromPreference();
         LatLng latLng = Prefs.retrieveDestinationLocationFromPreference();
         if (latLng.latitude == 0.0f && latLng.longitude == 0.0f) {
             latLng = home;
+            destinationAddress = homeAddress;
         }
         destinationLatitude = latLng.latitude;
         destinationLongitude = latLng.longitude;
 
         if (mGoogleMap != null) {
             String markerLabel = getMarkerLabel();
-            mGoogleMap.clear();
-            mGoogleMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title(markerLabel)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+            animateMap(latLng, markerLabel);
         }
     }
 
@@ -393,8 +385,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onDestroy();
         registerReceivers(false);
 
-        LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
-        Prefs.saveDestinationLocationToPreference(latLng);
+        // TODO should this be here?
+        //LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
+        //Prefs.saveDestinationLocationToPreference(latLng);
     }
 
     private String getUrl(LatLng origin, LatLng destination, String directionMode) {
@@ -509,12 +502,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (mGoogleMap != null) {
             String markerLabel = getMarkerLabel();
-            mGoogleMap.clear();
-            mGoogleMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title(markerLabel)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+            animateMap(latLng, markerLabel);
         }
 
         locationSource = LocationSource.Uninitialized;
@@ -555,11 +543,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             currentLatitude = latitude;
             currentLongitude = longitude;
             markerLabel = locationSource.toString(); //"Marker";
-            mGoogleMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(latitude, longitude))
-                    .title(markerLabel)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), zoom));
+            animateMap(new LatLng(latitude, longitude), markerLabel);
 
             if (destinationLatitude != 0.0 && destinationLongitude != 0.0) {
                 goToDestination();
@@ -575,23 +559,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             LatLng latLng = new LatLng(latitude, longitude);
             Prefs.saveDestinationLocationToPreference(latLng);
 
-            mGoogleMap.clear();
-            mGoogleMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title(markerLabel)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-
+            animateMap(latLng, markerLabel);
         } else {
-            mGoogleMap.clear();
-
-            locationSource = LocationSource.DestinationLocation;
-            destinationAddress = homeAddress;
-            mGoogleMap.addMarker(new MarkerOptions()
-                    .position(home)
-                    .title("Home")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
+            animateMap(home, "Home");
         }
     }
 
@@ -677,13 +647,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Log.d(TAG, "onLocationResult: " + msg);
 
                         Prefs.saveDestinationLocationToPreference(updatedLocation);
-
-                        mGoogleMap.clear();
-                        mGoogleMap.addMarker(new MarkerOptions()
-                                .position(updatedLocation)
-                                .title(locationString)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(updatedLocation, zoom));
+                        animateMap(updatedLocation, locationString);
                         toastMessage(msg);
 
                         Utils.getAddressFromLocation(latitude, longitude, mContext, addressResultHandler);
@@ -763,13 +727,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 destinationLongitude = home.longitude;
                 locationSource = LocationSource.DestinationLocation;
                 progress(false);
-
-                mGoogleMap.clear();
-                mGoogleMap.addMarker(new MarkerOptions()
-                        .position(home)
-                        .title(destinationAddress)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
+                animateMap(home, destinationAddress);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -789,13 +747,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Prefs.saveDestinationLocationToPreference(homeLocation);
         Prefs.saveHomeAddressToPreference(homeAddress);
-
-        mGoogleMap.clear();
-        mGoogleMap.addMarker(new MarkerOptions()
-                .position(homeLocation)
-                .title(homeAddress)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(homeLocation, zoom));
+        animateMap(homeLocation, homeAddress);
 
         progress(false);
     }
@@ -932,6 +884,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void animateMap(LatLng latLng, String markerLabel) {
+        if (mGoogleMap != null) {
+            mGoogleMap.clear();
+            mGoogleMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title(markerLabel)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM));
+        } else {
+            toastMessage(String.format("Could not animate map to %s, %s (%s)", latLng.latitude, latLng.longitude, markerLabel));
+        }
     }
 
 }

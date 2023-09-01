@@ -12,7 +12,9 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -235,6 +237,7 @@ public class LocationService extends Service implements
         Log.d(TAG, "onLocationChanged: " + msg);
 
         Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
+        Utils.getAddressFromLocation(latitude, longitude, getApplicationContext(), locationAddressResultHandler);
 
         Utils.makeNotification(getApplicationContext(), "Acquire Location", msg, ButtonWidgetReceiver.REQ_CODE);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
@@ -289,5 +292,14 @@ public class LocationService extends Service implements
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    private static Handler locationAddressResultHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            String destinationAddress = msg.getData().getString("address");
+            Prefs.saveDestinationAddressToPreference(destinationAddress);
+            Log.d(TAG, "addressResultHandler, result=" + destinationAddress);
+        }
+    };
 
 }
