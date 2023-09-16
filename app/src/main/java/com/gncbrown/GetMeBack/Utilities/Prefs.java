@@ -10,6 +10,7 @@ public class Prefs {
 
     private static final String PREF_KEY_DESTINATION_LATITUDE = "destinationLatitude";
     private static final String PREF_KEY_DESTINATION_LONGITUDE = "destinationLongitude";
+    private static final String PREF_KEY_DESTINATION_ALTITUDE = "destinationAltitude";
     private static final String PREF_KEY_DESTINATION_ADDRESS = "destinationAddress";
     private static final String PREF_KEY_HOME_ADDRESS = "homeAddress";
     private static final String PREF_KEY_HOME_LATITUDE = "homeLatitude";
@@ -39,6 +40,22 @@ public class Prefs {
             editor.putFloat(PREF_KEY_DESTINATION_LATITUDE, 0.0f).apply();
             editor.putFloat(PREF_KEY_DESTINATION_LONGITUDE, 0.0f).apply();
         }
+    }
+
+    public static double retrieveDestinationAltitudeFromPreference() {
+        double altitude = 0.0;
+        try {
+            altitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_DESTINATION_ALTITUDE, 0.0f);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return altitude;
+    }
+
+    public static void saveDestinationAltitudeToPreference(double value) {
+        //Log.d(TAG, "saveDestinationAltitudeToPreference, value=" + value);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putFloat(PREF_KEY_DESTINATION_ALTITUDE, (float)value).apply();
     }
 
     public static String retrieveDestinationAddressFromPreference() {

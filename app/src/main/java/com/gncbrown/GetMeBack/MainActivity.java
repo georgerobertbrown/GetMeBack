@@ -269,7 +269,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 if (locationSource == LocationSource.Uninitialized) {
-                    Utils.showAlertDialog(mContext, "Error", "Destination location not set");
+                    Utils.showAlertDialog(getApplicationContext(), //mContext,
+                            "Error", "Destination location not set");
                 } else {
                     Toast.makeText(getApplicationContext(), "Return to mark", Toast.LENGTH_SHORT).show();
                     goToDestination();
@@ -289,14 +290,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .addApi(LocationServices.API)
                     .build();
 
-            Intent showHelp = new Intent(mContext, HelpActivity.class);
+            //Intent showHelp = new Intent(mContext, HelpActivity.class);
+            Intent showHelp = new Intent(getApplicationContext(), HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "welcome");
             startActivityForResult(showHelp, requestCode);
         } else {
-            if (!Utils.hasPermissions(requiredPermissions, mContext))
+            if (!Utils.hasPermissions(requiredPermissions, getApplicationContext())) //mContext))
                 requestMultiplePermissions();
-            if (!Utils.hasPermissions(requiredPermissions, mContext))
+            if (!Utils.hasPermissions(requiredPermissions, getApplicationContext())) //mContext))
                 Toast.makeText(getApplicationContext(), "Permissions not granted by user!", Toast.LENGTH_SHORT).show();
 
             MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST, new OnMapsSdkInitializedCallback() {
@@ -317,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             destinationLongitude = initialLatLng.longitude;
             destinationAddress = Prefs.retrieveDestinationAddressFromPreference();
 
-            Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, mContext,
+            Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, getApplicationContext(), //mContext,
                     addressResultHandler);
         }
 
@@ -331,9 +333,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == 40) {
 
-            if (!Utils.hasPermissions(requiredPermissions, mContext))
+            if (!Utils.hasPermissions(requiredPermissions, getApplicationContext())) //mContext))
                 requestMultiplePermissions();
-            if (!Utils.hasPermissions(requiredPermissions, mContext))
+            if (!Utils.hasPermissions(requiredPermissions, getApplicationContext())) //mContext))
                 Toast.makeText(getApplicationContext(), "Permissions not granted by user!", Toast.LENGTH_SHORT).show();
 
             MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST, new OnMapsSdkInitializedCallback() {
@@ -432,22 +434,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         int id = item.getItemId();
 
         if (id == R.id.actionAbout) {
-            Intent showHelp = new Intent(mContext, HelpActivity.class);
+            Intent showHelp = new Intent(getApplicationContext(), //mContext,
+                    HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "help");
             mContext.startActivity(showHelp);
             return true;
         } else if (id == R.id.actionWelcome) {
-            Intent showHelp = new Intent(mContext, HelpActivity.class);
+            Intent showHelp = new Intent(getApplicationContext(), //mContext,
+                    HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "welcome");
             mContext.startActivity(showHelp);
             return true;
         } else if (id == R.id.actionReleases) {
-            Intent showHelp = new Intent(mContext, HelpActivity.class);
+            Intent showHelp = new Intent(getApplicationContext(), //mContext,
+                    HelpActivity.class);
             showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             showHelp.putExtra("type", "changeLog");
-            mContext.startActivity(showHelp);
+            //mContext.startActivity(showHelp);
+            getApplicationContext().startActivity(showHelp);
             return true;
         } else if (id == R.id.actionSetHome) {
             setHomeDialog();
@@ -458,12 +464,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (id == R.id.actionValues) {
             LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
             String destinationAddress = Prefs.retrieveDestinationAddressFromPreference();
+            Double destinationAltitude = Prefs.retrieveDestinationAltitudeFromPreference();
             LatLng homeLatLng = Prefs.retrieveHomeLocationFromPreference();
             String homeAddress = Prefs.retrieveHomeAddressFromPreference();
-            String values = String.format("Lat/Lng: %s, %s\nAddress: %s\nHome LatLng: %s, %s\nHome: %s",
-                    destinationLatLng.latitude, destinationLatLng.longitude, destinationAddress,
+            String values = String.format("Lat/Lng: %s, %s (%s)\nAddress: %s\nHome LatLng: %s, %s\nHome: %s",
+                    destinationLatLng.latitude, destinationLatLng.longitude, destinationAltitude, destinationAddress,
                     homeLatLng.latitude, homeLatLng.longitude, homeAddress);
-            Utils.showAlertDialog(mContext, "Values", values);
+            Utils.showAlertDialog(mContext,
+                    "Values", values);
             return true;
         }
 
@@ -580,15 +588,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void doInBackground() {
-                if (ActivityCompat.checkSelfPermission(mContext,
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                         Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(mContext,
+                        ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     requestMultiplePermissions();
                 }
-                if (ActivityCompat.checkSelfPermission(mContext,
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                         Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(mContext,
+                        ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     toastMessage("Permissions not granted by user!");
                 }
@@ -611,15 +619,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void requestLocationUpdate(boolean start) {
         Log.d(TAG, "requestLocationUpdate");
         // Request location updates
-        if (ActivityCompat.checkSelfPermission(mContext,
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(mContext,
+                ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                         Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestMultiplePermissions();
         }
-        if (ActivityCompat.checkSelfPermission(mContext,
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(mContext,
+                ActivityCompat.checkSelfPermission(getApplicationContext(), //mContext,
                         Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             toastMessage("Permissions not granted by user!");
             return;
@@ -650,11 +658,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         animateMap(updatedLocation, locationString);
                         toastMessage(msg);
 
-                        Utils.getAddressFromLocation(latitude, longitude, mContext, addressResultHandler);
+                        Utils.getAddressFromLocation(latitude, longitude, getApplicationContext(), //mContext,
+                                addressResultHandler);
                     }
                 }
             };
-            LocationServices.getFusedLocationProviderClient(mContext).requestLocationUpdates(mLocationRequest,
+            LocationServices.getFusedLocationProviderClient(getApplicationContext()) //mContext)
+                    .requestLocationUpdates(mLocationRequest,
                     mLocationCallback, null);
             Log.d("enque", "--->>>>");
         } else {
@@ -679,7 +689,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // check for permanent denial of any permission
                         if (report.isAnyPermissionPermanentlyDenied()) {
                             // show alert dialog navigating to Settings
-                            Utils.openSettingsDialog(MainActivity.this, mContext);
+                            Utils.openSettingsDialog(MainActivity.this, getApplicationContext()); //mContext);
                         }
                     }
                     @Override
@@ -699,7 +709,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void setNewDestinationAlert(LatLng point) {
         progress(true);
-        Utils.getAddressFromLocation(point.latitude, point.longitude, mContext,
+        Utils.getAddressFromLocation(point.latitude, point.longitude, getApplicationContext(), //mContext,
                 newDestinationResultHandler);
     }
 
@@ -718,7 +728,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 homeAddress = inputText.getText().toString();
 
                 progress(true);
-                home = Utils.getLocationFromAddress(destinationAddress, mContext);
+                home = Utils.getLocationFromAddress(destinationAddress, getApplicationContext()); //mContext);
                 Prefs.saveHomeAddressToPreference(destinationAddress);
                 Prefs.saveHomeLocationToPreference(home);
                 Prefs.saveDestinationLocationToPreference(home);
@@ -818,7 +828,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (destinationLatitude == 0.0 && destinationLongitude == 0.0) {
             Utils.showAlertDialog(this, "Error", "Destination not set!");
         } else {
-            AlertDialog.Builder mBuilder = new AlertDialog.Builder(mContext);
+            AlertDialog.Builder mBuilder = new AlertDialog.Builder(getApplicationContext()); //mContext);
             mBuilder.setTitle(String.format("Choose a navigation method to %s", destination));
             //destinationLatLng.latitude, destinationLatLng.longitude));
             mBuilder.setSingleChoiceItems(navigationMethods, -1, new DialogInterface.OnClickListener() {
@@ -834,7 +844,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
                         startActivity(mapIntent);
                     } catch (Exception e) {
-                        Utils.showAlertDialog(mContext, "Navigation Error", e.getMessage());
+                        Utils.showAlertDialog(getApplicationContext(), //mContext,
+                                "Navigation Error", e.getMessage());
                     }
 
                     dialogInterface.dismiss();
@@ -881,7 +892,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void toastMessage(String message) {
         runOnUiThread(new Runnable() {
             public void run() {
-                Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), //mContext,
+                        message, Toast.LENGTH_SHORT).show();
             }
         });
     }

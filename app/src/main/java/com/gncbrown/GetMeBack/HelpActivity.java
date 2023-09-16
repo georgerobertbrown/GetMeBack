@@ -32,7 +32,6 @@ public class HelpActivity extends Activity {
     private String helpType = "help";
 
     private static final int permissionsCode = 42;
-    private static Context context;
 
     /**
      * Called when the activity is first created.
@@ -42,7 +41,6 @@ public class HelpActivity extends Activity {
         super.onCreate(savedInstanceState);
 
 //		Log.d(TAG, "onCreate:HelpActivity");
-        context = MainActivity.mContext;
         try {
             helpType = getIntent().getStringExtra("type");
         } catch (Exception e) {

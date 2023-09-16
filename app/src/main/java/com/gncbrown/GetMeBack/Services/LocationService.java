@@ -233,10 +233,11 @@ public class LocationService extends Service implements
     public void onLocationChanged(@NonNull Location location) {
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        String msg = "Acquired location: " + latitude + ", " + longitude;
+        String msg = "Acquired location: " + latitude + ", " + longitude + " (" + location.getAltitude() + ")";
         Log.d(TAG, "onLocationChanged: " + msg);
 
         Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
+        Prefs.saveDestinationAltitudeToPreference(location.getAltitude());
         Utils.getAddressFromLocation(latitude, longitude, getApplicationContext(), locationAddressResultHandler);
 
         Utils.makeNotification(getApplicationContext(), "Acquire Location", msg, ButtonWidgetReceiver.REQ_CODE);
