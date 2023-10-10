@@ -4,6 +4,9 @@ import android.content.SharedPreferences;
 import com.gncbrown.GetMeBack.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Prefs {
 
     private static final String TAG = "Prefs";
@@ -16,6 +19,7 @@ public class Prefs {
     private static final String PREF_KEY_HOME_LATITUDE = "homeLatitude";
     private static final String PREF_KEY_HOME_LONGITUDE = "homeLongitude";
     private static final String PREF_KEY_FIRST_TIME = "firstTime";
+    private static final String PREF_KEY_NAMED_LOCATIONS = "namedLocations";
 
 
     public static LatLng retrieveDestinationLocationFromPreference() {
@@ -96,6 +100,51 @@ public class Prefs {
             editor.putFloat(PREF_KEY_HOME_LATITUDE, 0.0f).apply();
             editor.putFloat(PREF_KEY_HOME_LONGITUDE, 0.0f).apply();
         }
+    }
+
+    public static String[] retrieveNamedLocations() {
+        Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
+        String[] arrayOfLocations = locations.toArray(new String[0]);
+        return arrayOfLocations;
+    }
+
+    public static void saveToNamedLocations(String name) {
+        Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
+        locations.remove(name);
+        locations.add(name);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putStringSet(PREF_KEY_NAMED_LOCATIONS, locations).apply();
+    }
+
+    public static LatLng retrieveNamedLocation(String name) {
+        String locationFor = MainActivity.sharedPreferences.getString(name, "43.05687,-75.25245");
+        String[] latLngString = locationFor.split(",");
+        float latitude = 0.0f;
+        float longitude = 0.0f;
+        try {
+            latitude = Float.parseFloat(latLngString[0]);
+            longitude = Float.parseFloat(latLngString[1]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new LatLng(latitude, longitude);
+    }
+
+    public static void removeNamedLocationFromPreference(String name) {
+        Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
+        locations.remove(name);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.remove(name);
+        editor.putStringSet(PREF_KEY_NAMED_LOCATIONS, locations).apply();
+        editor.commit();
+    }
+
+    public static void saveNamedLocationToPreference(String name, LatLng value) {
+        //Log.d(TAG, "saveNamedLocationToPreference, name=" + name + ", value=" + value);
+        saveToNamedLocations(name);
+
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putString(name, String.format("%s,%s", value.latitude, value.longitude)).apply();
     }
 
     public static void saveHomeAddressToPreference(String value) {

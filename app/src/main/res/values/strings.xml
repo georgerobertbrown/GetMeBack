@@ -1,10 +1,10 @@
 <!DOCTYPE resources [
     <!ENTITY appname "GetMeBack!">
-    <!ENTITY version "1.2.1">
+    <!ENTITY version "1.4.0">
     ]>
 
 <resources>
-    <string name="app_name">GetMeBack!</string>
+    <string name="appName">GetMeBack!</string>
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
 

@@ -1,0 +1,3 @@
+1. Gradle upgrade<br/>
+2. Added named locations<br/>
+3. Handle no internet when looking up address

@@ -2,7 +2,6 @@ package com.gncbrown.GetMeBack.Utilities;
 
 import static androidx.core.app.ActivityCompat.startActivityForResult;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -73,7 +72,7 @@ public class Utils {
                 @Override
                 public void run() {
                     Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-                    String result = null;
+                    String result = String.format("No address found for: %s, %s", latitude, longitude);
                     try {
                         List<Address> list = geocoder.getFromLocation(
                                 latitude, longitude, 1);
@@ -82,7 +81,7 @@ public class Utils {
                             // sending back first address line and locality
                             result = address.getAddressLine(0) + ", " + address.getLocality();
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         Log.e(TAG, "Impossible to connect to Geocoder", e);
                     } finally {
                         Message msg = Message.obtain();
@@ -163,7 +162,7 @@ public class Utils {
         intent.putExtra("Message", message);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, reqCode, intent,
                 PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
-        String channelId = context.getResources().getString(R.string.app_name); //"channel_name";
+        String channelId = context.getResources().getString(R.string.appName); //"channel_name";
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(android.R.drawable.ic_dialog_map)
                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
