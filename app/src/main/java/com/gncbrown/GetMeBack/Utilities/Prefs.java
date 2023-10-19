@@ -26,8 +26,8 @@ public class Prefs {
         float latitude = 0.0f;
         float longitude = 0.0f;
         try {
-            latitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_DESTINATION_LATITUDE, 0.0f);
-            longitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_DESTINATION_LONGITUDE, 0.0f);
+            latitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_DESTINATION_LATITUDE, (float) MainActivity.home.latitude);
+            longitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_DESTINATION_LONGITUDE, (float) MainActivity.home.longitude);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,8 +82,8 @@ public class Prefs {
         float latitude = 0.0f;
         float longitude = 0.0f;
         try {
-            latitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_HOME_LATITUDE, 0.0f);
-            longitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_HOME_LONGITUDE, 0.0f);
+            latitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_HOME_LATITUDE, (float) MainActivity.home.latitude);
+            longitude = MainActivity.sharedPreferences.getFloat(PREF_KEY_HOME_LONGITUDE, (float) MainActivity.home.longitude);
         } catch (Exception e) {
             e.printStackTrace();
         }

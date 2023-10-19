@@ -11,7 +11,7 @@ When dealing with Android's location service, getting the current location or th
 Tap the pushpin icon <img src="pushpin_red.png"> to get the current location. The location request will be processed in background. When the location is acquired, a separate background task will be started to get the address (located below the icons). The address will be updated automatically.
 
 <h3>Returning to the destination</h3>
-Tap the map icon <img src="navigate_map_nobackground.png"> to request Google turn-by-turn directions. A dialog will appear requesting the navigation method: either <i>driving</i> or <i>walking</i>.
+Tap the map icon <img src="navigate_map_nobackground.png"> to request Google turn-by-turn directions. A dialog will appear requesting the navigation method: <i>driving</i>, <i>walking</i>, <i>bicycle</i>, <i>transit</i>.
 
 NOTE:
 <li> it may take some time to get the current location and navigation directions</li>
@@ -33,7 +33,16 @@ A Home screen widget can be created to quickly set the current location and retu
 Tap the <img src="pushpin_red.png"> icon to set your current location as destination location. This will be the location GetMeBack will return to when the <i>Return to destination</i> button is selected.
 
 <h3>Return to destination</h3>
-Tap the <img src="navigate_map_nobackground.png"> icon to launch Google's turn-by-turn navigation. It will prompt for the navigation mode, either driving or walking.
+Tap the <img src="navigate_map_nobackground.png"> icon to launch Google's turn-by-turn navigation. It will prompt for the navigation mode, either driving, walking, bicycle, or transit.
 
 <h3>Main screen</h3>
 Tapping on the main screen will prompt to set that as the new destination. It will display the geolocation and the street address. Tap OK to set as the new destination or Cancel.
+
+<h2>Named locations</h2>
+Locations can be assigned a name and restored for future use. For example, you can have a location named <i>Home</i>, <i>Work</i>, <i>Gym</i>, etc. Named locations options are available under the <i>More</i> menu.
+
+<ol>
+    <li><i>Save location</i> Pops up a dialog to enter the location name.</li>
+    <li><i>Restore location</i> Select one of the named locations to set as the current location.</li>
+    <li><i>Forget location</i> Removed the location name.</li>
+</ol>

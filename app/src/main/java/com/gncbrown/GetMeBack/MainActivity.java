@@ -117,8 +117,6 @@ public class MainActivity extends AppCompatActivity implements
     private static String homeAddress = "1650 Amphitheatre Pkwy, Mountain View, CA, 94043"; //"4 Frederick Drive, New Hartford, NY";
     public static LatLng home = new LatLng(37.4219983, -122.084); //new LatLng(43.05687, -75.25245);
 
-    private Double latitude = 0.00;
-    private Double longitude = 0.00;
     private static Double destinationLatitude = 0.00;
     private static Double destinationLongitude = 0.00;
     private Double currentLatitude = 0.00;
@@ -202,7 +200,6 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "goToDestinationReceiver.onReceive");
-            locationSource = LocationSource.CurrentLocation;
             goToDestination();
         }
     };
@@ -278,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements
         fabGo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (locationSource == LocationSource.Uninitialized) {
+                if (destinationLatitude == 0.0 && destinationLongitude == 0.0) {
                     Utils.showAlertDialog(mContext,
                             "Error", "Destination location not set");
                 } else {
@@ -478,11 +475,10 @@ public class MainActivity extends AppCompatActivity implements
             Double destinationAltitude = Prefs.retrieveDestinationAltitudeFromPreference();
             LatLng homeLatLng = Prefs.retrieveHomeLocationFromPreference();
             String homeAddress = Prefs.retrieveHomeAddressFromPreference();
-            String values = String.format("Lat/Lng: %s, %s (%s)\nAddress: %s\nHome LatLng: %s, %s\nHome: %s",
+            String values = String.format("Lat/Lng(Alt): %s, %s (%s)\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
                     destinationLatLng.latitude, destinationLatLng.longitude, destinationAltitude, destinationAddress,
                     homeLatLng.latitude, homeLatLng.longitude, homeAddress);
-            Utils.showAlertDialog(mContext,
-                    "Values", values);
+            Utils.showAlertDialog(mContext, "Values", values);
 
         } else if (menuTitle.equals(OPTION_LOCATION)) {
             moreSubmenuContext = OPTION_LOCATION;
@@ -626,19 +622,19 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-        String msg = "Updated location: " + latitude + "," + longitude;
+        destinationLatitude = location.getLatitude();
+        destinationLongitude = location.getLongitude();
+        String msg = "Updated location: " + destinationLatitude + "," + destinationLongitude;
         Log.d(TAG, "onLocationChanged: " + msg);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         progress(false);
 
         String markerLabel = "";
         if (locationSource == LocationSource.CurrentLocation) {
-            currentLatitude = latitude;
-            currentLongitude = longitude;
+            currentLatitude = location.getLatitude();
+            currentLongitude = location.getLongitude();
             markerLabel = locationSource.toString(); //"Marker";
-            animateMap(new LatLng(latitude, longitude), markerLabel);
+            animateMap(new LatLng(location.getLatitude(), location.getLongitude()), markerLabel);
 
             if (destinationLatitude != 0.0 && destinationLongitude != 0.0) {
                 goToDestination();
@@ -646,12 +642,12 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(this, "Current location not set.", Toast.LENGTH_SHORT).show();
             }
         } else if (locationSource == LocationSource.DestinationLocation) {
-            destinationLatitude = latitude;
-            destinationLongitude = longitude;
+            destinationLatitude = location.getLatitude();
+            destinationLongitude = location.getLongitude();
             destinationAddress = null;
             markerLabel = getMarkerLabel();
 
-            LatLng latLng = new LatLng(latitude, longitude);
+            LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
             Prefs.saveDestinationLocationToPreference(latLng);
 
             animateMap(latLng, markerLabel);
@@ -697,6 +693,7 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public void onPostExecute() {
+                locationSource = LocationSource.DestinationLocation;
                 progress(false);
             }
         };
@@ -734,19 +731,21 @@ public class MainActivity extends AppCompatActivity implements
                         return;
                     Location location = locationResult.getLocations().get(0);
                     if (location != null) {
-                        latitude = location.getLatitude();
-                        longitude = location.getLongitude();
-                        LatLng updatedLocation = new LatLng(latitude, longitude);
-                        String locationString = String.format("%s, %s", latitude, longitude);
+                        locationSource = LocationSource.CurrentLocation;
+
+                        destinationLatitude = location.getLatitude();
+                        destinationLongitude = location.getLongitude();
+                        LatLng updatedLocation = new LatLng(destinationLatitude, destinationLongitude);
+                        String locationString = String.format("%s, %s", destinationLatitude, destinationLongitude);
                         String msg = "Updated location: " + locationString;
                         Log.d(TAG, "onLocationResult: " + msg);
 
-                        Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
+                        Prefs.saveDestinationLocationToPreference(new LatLng(destinationLatitude, destinationLongitude));
+                        Prefs.saveDestinationAltitudeToPreference(location.getAltitude());
                         animateMap(updatedLocation, locationString);
                         toastMessage(msg);
 
-                        Utils.getAddressFromLocation(latitude, longitude, mContext,
-                                addressResultHandler);
+                        Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, mContext, addressResultHandler);
                     }
                 }
             };
@@ -919,8 +918,8 @@ public class MainActivity extends AppCompatActivity implements
     private void goToDestination() {
         String destination = Prefs.retrieveDestinationAddressFromPreference();
         LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
-        Double destinationLatitude = destinationLatLng.latitude;
-        Double destinationLongitude = destinationLatLng.longitude;
+        destinationLatitude = destinationLatLng.latitude;
+        destinationLongitude = destinationLatLng.longitude;
 
         if (destinationLatitude == 0.0 && destinationLongitude == 0.0) {
             Utils.showAlertDialog(this, "Error", "Destination not set!");

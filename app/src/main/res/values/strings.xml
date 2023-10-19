@@ -11,6 +11,8 @@
     <string-array name="navigationMethods">
         <item>Driving</item>
         <item>Walking</item>
+        <item>Bicycle</item>
+        <item>Transit</item>
     </string-array>
 
     <string name="ACTION_GET_LOCATION">com.gncbrown.GetMeBack.ACTION_GET_LOCATION</string>

@@ -1,0 +1,4 @@
+1. Set location on start up<br/>
+2. Set default location to Google headquarters<br/>
+3. Show altitude in values<br/>
+4. Add Bicycle and Transit to modes
