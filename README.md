@@ -2,6 +2,8 @@
 GetMeBack! allows you to mark a location and then easily get directions to return. This is useful for example if you park your car and go shopping and then forget where your car is. The app uses your phone's location services as well as Google Map's turn-by-turn directions to return to the marked location. Navigation modes are:
 - Driving
 - Walking
+- Bicycle
+- Transit
 
 When the app is launched the first time, it will request location permission. *Precise location* mode **MUST** be selected for the app to function properly.
 
@@ -32,3 +34,10 @@ A Home screen widget can be created to quickly set the current location and retu
 - tap *GetMeBack*
 - press and hold the widget preview icon ![Widget previewn](app/src/main/res/drawable/widget_preview.png)
 - drag the widget to the Home screen
+
+## Named locations
+Locations can be assigned a name and restored for future use. For example, you can have a location named *Home*, *Work*, *Gym*, etc. Named locations options are available under the *More* menu.
+
+- *Save location* Pops up a dialog to enter the location name.
+- *Restore location* Select one of the named locations to set as the current location.
+- *Forget location* Removed the location name.

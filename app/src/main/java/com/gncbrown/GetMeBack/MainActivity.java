@@ -15,6 +15,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,15 +26,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 
 import com.gncbrown.GetMeBack.Utilities.BackgroundTask;
@@ -210,7 +216,20 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        CoordinatorLayout mainLayout = findViewById(R.id.main_layout);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            EdgeToEdge.enable(this);
+            Window window = getWindow();
+            window.setDecorFitsSystemWindows(false);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
+                int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+                v.setPadding(0, topInset, 0, 0);
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
+
+
+        CoordinatorLayout mainLayout = findViewById(R.id.topView);
 
         mContext = this;
         sharedPreferences = getSharedPreferences("USER", MODE_PRIVATE);

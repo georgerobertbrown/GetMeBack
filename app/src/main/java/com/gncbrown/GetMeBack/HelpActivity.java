@@ -6,15 +6,22 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.gncbrown.GetMeBack.Utilities.Utils;
 
@@ -26,7 +33,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HelpActivity extends Activity {
+public class HelpActivity extends AppCompatActivity {
     private static final String TAG = HelpActivity.class.getSimpleName();
 
     private String helpType = "help";
@@ -48,6 +55,17 @@ public class HelpActivity extends Activity {
         }
 //		Log.d(TAG, "help type=" + helpType);
         setContentView(R.layout.activity_help);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            EdgeToEdge.enable(this);
+            Window window = getWindow();
+            window.setDecorFitsSystemWindows(false);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
+                int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+                v.setPadding(0, topInset, 0, 0);
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
 
         TextView helpText = findViewById(R.id.helpText);
         Context context = helpText.getContext();

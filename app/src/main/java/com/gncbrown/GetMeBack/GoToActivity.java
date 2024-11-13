@@ -1,13 +1,19 @@
 package com.gncbrown.GetMeBack;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.google.android.gms.maps.model.LatLng;
@@ -25,6 +31,17 @@ public class GoToActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_go_to);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            EdgeToEdge.enable(this);
+            Window window = getWindow();
+            window.setDecorFitsSystemWindows(false);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
+                int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+                v.setPadding(0, topInset, 0, 0);
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
 

@@ -23,14 +23,14 @@ repositories {
 }
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 35
 
     defaultConfig {
         applicationId "com.gncbrown.GetMeBack"
-        minSdkVersion 33
-        targetSdkVersion 34
+        minSdkVersion 35
+        targetSdkVersion 35
         versionCode 4
-        versionName "1.4.0"
+        versionName "1.4.1"
 
         multiDexEnabled true
     }
