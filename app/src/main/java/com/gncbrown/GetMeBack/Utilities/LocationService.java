@@ -47,6 +47,8 @@ public class LocationService extends Service implements
 
     private Double latitude = 0.00;
     private Double longitude = 0.00;
+    private KalmanFilter kalmanFilter = new KalmanFilter(0, 0, 1, 0.1);
+
 
 
     private class LoadActivity extends AsyncTask<Void, Void, Void> {
@@ -84,8 +86,11 @@ public class LocationService extends Service implements
 
     private void goToDestination() {
         LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
-        Double destinationLatitude = destinationLatLng.latitude;
-        Double destinationLongitude = destinationLatLng.longitude;
+        LatLng filteredDestinationLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
+        Log.d(TAG, String.format("destinationLatLng=%s, filteredDestinationLatLng=%s", destinationLatLng, filteredDestinationLatLng));
+
+        double destinationLatitude = destinationLatLng.latitude;
+        double destinationLongitude = destinationLatLng.longitude;
 
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(getApplicationContext());
         mBuilder.setTitle(String.format("Choose a navigation method to %s, %s",
@@ -232,6 +237,10 @@ public class LocationService extends Service implements
         longitude = location.getLongitude();
         String msg = "Updated location: " + latitude + "," + longitude;
         Log.d(TAG, "onLocationChanged: " + msg);
+
+        double[] filteredLocation = kalmanFilter.update(latitude, longitude);
+        Log.d(TAG, String.format("kalman lat=%s, lon=%s", filteredLocation[0], filteredLocation[1]));
+
         Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
 
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();

@@ -40,6 +40,13 @@ import java.util.Locale;
 public class Utils {
     private static final String TAG = "Utils";
 
+    public static String getVersion() {
+        return "Version " + com.gncbrown.GetMeBack.BuildConfig.VERSION_NAME
+                + "\nDeveloper: George Brown"
+                + "\nTester: Cindy Brown"
+                + "\nemail: georgerobertbrown@gmail.com";
+    }
+
     public static void showAlertDialog(Context context, String title, String message) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
         dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {

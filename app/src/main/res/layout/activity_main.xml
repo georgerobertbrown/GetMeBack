@@ -48,12 +48,23 @@
         app:backgroundTint="@color/grey_20" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabMark"
+        android:id="@+id/fabFineLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="140dp"
+        android:src="@android:drawable/ic_menu_compass"
+        android:tint="@color/grey_80"
+        app:backgroundTint="@color/grey_20" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="205dp"
         android:src="@android:drawable/ic_menu_mylocation"
         android:tint="@color/grey_80"
         app:backgroundTint="@color/grey_20" />

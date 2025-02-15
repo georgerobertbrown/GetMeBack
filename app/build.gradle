@@ -22,15 +22,22 @@ repositories {
     mavenCentral()
 }
 
+def currentDatestamp = new Date().format("yyMMdd")
+def currentTimestamp = new Date().format("HHmm")
+
 android {
     compileSdkVersion 35
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId "com.gncbrown.GetMeBack"
         minSdkVersion 35
         targetSdkVersion 35
         versionCode 4
-        versionName "1.4.1"
+        versionName "1.5.1-${currentDatestamp}${currentTimestamp}"
 
         multiDexEnabled true
     }

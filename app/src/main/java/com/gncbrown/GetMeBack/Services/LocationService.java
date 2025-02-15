@@ -88,6 +88,7 @@ public class LocationService extends Service implements
 
     private void goToDestination() {
         LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
+        LatLng filteredDestinationLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
         Double destinationLatitude = destinationLatLng.latitude;
         Double destinationLongitude = destinationLatLng.longitude;
 

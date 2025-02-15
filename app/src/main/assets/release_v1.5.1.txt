@@ -1,0 +1,5 @@
+1. Add FineLocation option to main map<br/>
+2. LocationForegroundService - NOT USED<br/>
+3. Added Kalman filter for GPS input - NOT USED<br/>
+4. Add date to version<br/>
+5. Switch to double for location (using stringTo/From Double)

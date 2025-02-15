@@ -4,7 +4,8 @@
     ]>
 
 <resources>
-    <string name="appName">GetMeBack!</string>
+    <string name="appName">&appname;</string>
+    <string name="fineLocationName">&appname; Fine Location</string>
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
 

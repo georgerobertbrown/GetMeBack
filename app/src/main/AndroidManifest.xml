@@ -29,7 +29,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.gncbrown.GetMeBack.HelpActivity" />
+        <activity
+            android:name="com.gncbrown.GetMeBack.FineLocationActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:label="@string/fineLocationName" />
+        <activity
+            android:name="com.gncbrown.GetMeBack.HelpActivity"
+            android:exported="false" />
 
         <receiver
             android:name="com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver"
@@ -47,6 +54,11 @@
 
         <service
             android:name="com.gncbrown.GetMeBack.Services.LocationService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="location" />
+        <service
+            android:name="com.gncbrown.GetMeBack.Services.LocationForegroundService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location" />
