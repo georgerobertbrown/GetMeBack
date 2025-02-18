@@ -47,7 +47,6 @@ public class LocationService extends Service implements
 
     private Double latitude = 0.00;
     private Double longitude = 0.00;
-    private KalmanFilter kalmanFilter = new KalmanFilter(0, 0, 1, 0.1);
 
 
 
@@ -86,8 +85,7 @@ public class LocationService extends Service implements
 
     private void goToDestination() {
         LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
-        LatLng filteredDestinationLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
-        Log.d(TAG, String.format("destinationLatLng=%s, filteredDestinationLatLng=%s", destinationLatLng, filteredDestinationLatLng));
+        Log.d(TAG, String.format("destinationLatLng=%s, filteredDestinationLatLng=%s"));
 
         double destinationLatitude = destinationLatLng.latitude;
         double destinationLongitude = destinationLatLng.longitude;
@@ -238,11 +236,7 @@ public class LocationService extends Service implements
         String msg = "Updated location: " + latitude + "," + longitude;
         Log.d(TAG, "onLocationChanged: " + msg);
 
-        double[] filteredLocation = kalmanFilter.update(latitude, longitude);
-        Log.d(TAG, String.format("kalman lat=%s, lon=%s", filteredLocation[0], filteredLocation[1]));
-
         Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
-
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 

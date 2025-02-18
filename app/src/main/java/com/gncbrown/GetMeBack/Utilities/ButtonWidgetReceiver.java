@@ -14,6 +14,7 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.gncbrown.GetMeBack.GoToActivity;
+import com.gncbrown.GetMeBack.PreciseLocationActivity;
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Services.LocationService;
 
@@ -23,10 +24,12 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 	public static final String ACTION_WIDGET_UPDATE_FROM_ACTIVITY = "com.gncbrown.GetMeBack.ACTION_WIDGET_UPDATE_FROM_ACTIVITY";
 	public static final String ACTION_ACTIVITY_UPDATE_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_UPDATE_FROM_WIDGET";
 	public static final String ACTION_ACTIVITY_GO_TO_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_GO_TO_FROM_WIDGET";
+	public static final String ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET";
 	public static final String ACTION_ACTIVITY_LAUNCH_FROM_WIDGET = "com.gncbrown.GetMeBack.ACTION_ACTIVITY_LAUNCH_FROM_WIDGET";
 	public static final String ACTION_BUTTON_SELECTED = "buttonSelected";
 	public static final String ACTION_MARK_LOCATION = "MarkMyLocation";
 	public static final String ACTION_RETURN_TO_DESTINATION = "ReturnToDestination";
+	public static final String ACTION_PRECISE_RETURN_TO_DESTINATION = "PreciseReturnToDestination";
 	public static final String ACTION_SHOW_APP = "ShowApp";
 
 	public static final int REQ_CODE = 13;
@@ -95,6 +98,9 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 							break;
 						case ACTION_RETURN_TO_DESTINATION:
 							goToLocation(context);
+							break;
+						case ACTION_PRECISE_RETURN_TO_DESTINATION:
+							preciseGoToLocation(context);
 							break;
 						case (ACTION_SHOW_APP):
 							launchApp(context);
@@ -167,6 +173,21 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 				remoteViews.setOnClickPendingIntent(R.id.returnToDestination,
 						returnToDestinationPendingIntent);
 
+				Intent preciseReturnToDestinationButtonWidget = new Intent(context,
+						ButtonWidgetReceiver.class);
+				preciseReturnToDestinationButtonWidget
+						.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+				preciseReturnToDestinationButtonWidget.putExtra(
+						ACTION_BUTTON_SELECTED, ACTION_PRECISE_RETURN_TO_DESTINATION);
+				preciseReturnToDestinationButtonWidget.putExtra(
+						AppWidgetManager.EXTRA_APPWIDGET_IDS, allWidgetIds);
+
+				PendingIntent preciseReturnToDestinationPendingIntent = PendingIntent.getBroadcast(
+						context, 0, preciseReturnToDestinationButtonWidget,
+						PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+				remoteViews.setOnClickPendingIntent(R.id.returnToDestination,
+						preciseReturnToDestinationPendingIntent);
+
 				appWidgetManager.updateAppWidget(widgetId, remoteViews);
 			}
 		} else {
@@ -199,6 +220,14 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		Log.d(TAG, "goToLocation " + ACTION_ACTIVITY_GO_TO_FROM_WIDGET);
 
 		Intent launchIntent = new Intent(context, GoToActivity.class);
+		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(launchIntent);
+	}
+
+	private void preciseGoToLocation(Context context) {
+		Log.d(TAG, "preciseGoToLocation " + ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET);
+
+		Intent launchIntent = new Intent(context, PreciseLocationActivity.class);
 		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(launchIntent);
 	}

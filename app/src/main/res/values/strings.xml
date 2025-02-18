@@ -5,9 +5,28 @@
 
 <resources>
     <string name="appName">&appname;</string>
-    <string name="fineLocationName">&appname; Fine Location</string>
+    <string name="preciseLocationName">&appname; Precise Location</string>
+    <string name="settingsName">&appname; Settings</string>
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
+
+    <string name="intervalHint">Sets the desired interval of location updates.</string>
+    <string name="minUpdateIntervalHint">Sets the fastest allowed interval of location updates.
+
+        Location updates may arrive faster than the desired interval (setIntervalMillis(long)), but will never arrive faster than specified here.</string>
+    <string name="minUpdateDistanceHint">Sets the minimum distance required between consecutive location updates.
+
+        If a derived location update is not at least the specified distance away from the previous location update delivered to the client, it will not be delivered. This may also allow additional power savings under some circumstances.</string>
+    <string name="maxUpdateDelayHint">Sets the longest a location update may be delayed.
+
+        This parameter controls location batching behavior. If this is set to a value at least 2x larger than the interval specified by setIntervalMillis(long), then a device may (but is not required to) save power by delivering locations in batches.
+
+        If clients do not require immediate delivery, consider setting this value as high as is reasonable to allow for additional power savings. When the LocationRequest is built, the maximum update delay will be set to the max of the provided maximum update delay and the interval. This normalizes requests without batching to have the maximum update delay equal to the interval.
+
+        For example, if a request is made with a 2s interval and a 10s maximum update delay, this implies that the device may choose to deliver batches of 5 locations every 10s (where each location in a batch represents a point in time ~2s after the previous).</string>
+    <string name="showBuildingsHint">Turns the 3D buildings layer on or off.</string>
+    <string name="showTrafficHint">Turns the traffic layer on or off.</string>
+    <string name="indoorModeHint">Sets whether indoor maps should be enabled.</string>
 
     <string-array name="navigationMethods">
         <item>Driving</item>

@@ -14,8 +14,6 @@ public class Prefs {
 
     private static final String PREF_KEY_GPS_CACHE_LATITUDE = "gpsCacheLatitude";
     private static final String PREF_KEY_GPS_CACHE_LONGITUDE = "gpsCacheLongitude";
-    private static final String PREF_KEY_FILTERED_DESTINATION_LATITUDE = "filteredDestinationLatitude";
-    private static final String PREF_KEY_FILTERED_DESTINATION_LONGITUDE = "filteredDestinationLongitude";
     private static final String PREF_KEY_DESTINATION_LATITUDE = "destinationLatitude";
     private static final String PREF_KEY_DESTINATION_LONGITUDE = "destinationLongitude";
     private static final String PREF_KEY_DESTINATION_ALTITUDE = "destinationAltitude";
@@ -25,6 +23,13 @@ public class Prefs {
     private static final String PREF_KEY_HOME_LONGITUDE = "homeLongitude";
     private static final String PREF_KEY_FIRST_TIME = "firstTime";
     private static final String PREF_KEY_NAMED_LOCATIONS = "namedLocations";
+    private static final String PREF_KEY_GPS_REFRESH_RATE_MILLIS = "gpsRefreshRate";
+    private static final String PREF_KEY_MIN_UPDATE_DISTANCE_METERS = "minUpdateDistance";
+    private static final String PREF_KEY_MIN_UPDATE_INTERVAL_MILLIS = "minUpdateInterval";
+    private static final String PREF_KEY_MAX_UPDATE_DELAY_MILLIS = "maxUpdateDelay";
+    private static final String PREF_KEY_SHOW_BUILDINGS = "showBuildings";
+    private static final String PREF_KEY_SHOW_TRAFFIC = "showTraffic";
+    private static final String PREF_KEY_INDOOR_MODE = "indoorMode";
 
 
     public static String doubleToString(double value) {
@@ -80,30 +85,6 @@ public class Prefs {
         } else {
             editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(0.0)).apply();
             editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(0.0)).apply();
-        }
-    }
-
-    public static LatLng retrieveFilteredDestinationLocationFromPreference() {
-        double latitude = MainActivity.home.latitude;
-        double longitude = MainActivity.home.longitude;
-        try {
-            latitude = stringToDouble(MainActivity.sharedPreferences.getString(PREF_KEY_FILTERED_DESTINATION_LATITUDE, doubleToString(latitude)));
-            longitude = stringToDouble(MainActivity.sharedPreferences.getString(PREF_KEY_FILTERED_DESTINATION_LONGITUDE, doubleToString(longitude)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new LatLng(latitude, longitude);
-    }
-
-    public static void saveFilteredDestinationLocationToPreference(LatLng value) {
-        //Log.d(TAG, "saveFilteredDestinationLocationToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        if (value != null) {
-            editor.putString(PREF_KEY_FILTERED_DESTINATION_LATITUDE, doubleToString(value.latitude)).apply();
-            editor.putString(PREF_KEY_FILTERED_DESTINATION_LONGITUDE, doubleToString(value.longitude)).apply();
-        } else {
-            editor.putString(PREF_KEY_FILTERED_DESTINATION_LATITUDE, doubleToString(0.0)).apply();
-            editor.putString(PREF_KEY_FILTERED_DESTINATION_LONGITUDE, doubleToString(0.0)).apply();
         }
     }
 
@@ -238,5 +219,112 @@ public class Prefs {
         //Log.d(TAG, "saveFirstTimeToPreference, value=" + value);
         SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
         editor.putBoolean(PREF_KEY_FIRST_TIME, value).apply();
+    }
+
+    public static long retrieveGPSRefreshRateMillisFromPreference() {
+        long value = 1000; // 1 second = 10000 ms
+        try {
+            value = MainActivity.sharedPreferences.getLong(PREF_KEY_GPS_REFRESH_RATE_MILLIS, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveGPSRefreshRateMillisToPreference(long value) {
+        //Log.d(TAG, "saveGPSRefreshRateToPreference, value=" + value);
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putLong(PREF_KEY_GPS_REFRESH_RATE_MILLIS, value).apply();
+    }
+
+    public static float retrieveMinUpdateDistanceMetersFromPreference() {
+        float value = 1; // 1 meter min distance moved
+        try {
+            value = MainActivity.sharedPreferences.getFloat(PREF_KEY_MIN_UPDATE_DISTANCE_METERS, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveMinUpdateDistanceMetersToPreference(float value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putFloat(PREF_KEY_MIN_UPDATE_DISTANCE_METERS, value).apply();
+    }
+
+
+    public static long retrieveMinUpdateIntervalMillisFromPreference() {
+        long value = 500;
+        try {
+            value = MainActivity.sharedPreferences.getLong(PREF_KEY_MIN_UPDATE_INTERVAL_MILLIS, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveMinUpdateIntervalMillisToPreference(long value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putLong(PREF_KEY_MIN_UPDATE_INTERVAL_MILLIS, value).apply();
+    }
+
+    public static long retrieveMaxUpdateDelayMillisFromPreference() {
+        long value = 1; // 1 meter min distance moved
+        try {
+            value = MainActivity.sharedPreferences.getLong(PREF_KEY_MAX_UPDATE_DELAY_MILLIS, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveMaxUpdateDelayMillisToPreference(long value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putLong(PREF_KEY_MAX_UPDATE_DELAY_MILLIS, value).apply();
+    }
+
+    public static boolean retrieveShowBuildingsFromPreference() {
+        boolean value = false;
+        try {
+            value = MainActivity.sharedPreferences.getBoolean(PREF_KEY_SHOW_BUILDINGS, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveShowBuildingsToPreference(boolean value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putBoolean(PREF_KEY_SHOW_BUILDINGS, value).apply();
+    }
+
+    public static boolean retrieveShowTrafficFromPreference() {
+        boolean value = false;
+        try {
+            value = MainActivity.sharedPreferences.getBoolean(PREF_KEY_SHOW_TRAFFIC, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveShowTrafficToPreference(boolean value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putBoolean(PREF_KEY_SHOW_TRAFFIC, value).apply();
+    }
+
+    public static boolean retrieveIndoorModeFromPreference() {
+        boolean value = false;
+        try {
+            value = MainActivity.sharedPreferences.getBoolean(PREF_KEY_INDOOR_MODE, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveIndoorModeToPreference(boolean value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putBoolean(PREF_KEY_INDOOR_MODE, value).apply();
     }
 }

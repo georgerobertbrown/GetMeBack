@@ -62,7 +62,7 @@ public class HelpActivity extends AppCompatActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
                 int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-                v.setPadding(0, topInset, 0, 0);
+                v.setPadding(0, topInset+200, 0, 0);
                 return WindowInsetsCompat.CONSUMED;
             });
         }

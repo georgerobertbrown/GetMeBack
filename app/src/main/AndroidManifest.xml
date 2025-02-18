@@ -30,13 +30,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.gncbrown.GetMeBack.FineLocationActivity"
+            android:name="com.gncbrown.GetMeBack.PreciseLocationActivity"
             android:exported="false"
             android:theme="@style/AppTheme"
-            android:label="@string/fineLocationName" />
+            android:label="@string/preciseLocationName" />
         <activity
             android:name="com.gncbrown.GetMeBack.HelpActivity"
+            android:theme="@style/AppTheme"
             android:exported="false" />
+        <activity
+            android:name="com.gncbrown.GetMeBack.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:label="@string/settingsName" />
 
         <receiver
             android:name="com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver"

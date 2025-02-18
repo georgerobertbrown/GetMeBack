@@ -20,25 +20,29 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-public class FineLocationActivity extends AppCompatActivity
+public class PreciseLocationActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnCameraIdleListener {
 
-    private static final String TAG = "FineLocationActivity";
+    private static final String TAG = "PreciseLocationActivity";
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
@@ -50,12 +54,17 @@ public class FineLocationActivity extends AppCompatActivity
     private TextView locationTextView;
     private float zoomLevel;
     private static final int BOUNDS_PADDING = 100;
+    private static BitmapDescriptor destinationMarker =
+            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+            //BitmapDescriptorFactory.fromResource(R.drawable.pushpin_red_nobackground);
+    private static BitmapDescriptor currentMarker =
+            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fine_location);
+        setContentView(R.layout.activity_precise_location);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             EdgeToEdge.enable(this);
@@ -90,6 +99,9 @@ public class FineLocationActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setBuildingsEnabled(Prefs.retrieveShowBuildingsFromPreference());
+        mMap.setTrafficEnabled(Prefs.retrieveShowTrafficFromPreference());
+        mMap.setIndoorEnabled(Prefs.retrieveIndoorModeFromPreference());
         mMap.setOnCameraIdleListener(this);
 
         // Check for location permission
@@ -111,10 +123,23 @@ public class FineLocationActivity extends AppCompatActivity
     }
 
     private void createLocationRequest() {
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000); // Update interval in milliseconds (e.g., 10 seconds)
-        locationRequest.setFastestInterval(5000); // Fastest update interval (e.g., 5 seconds)
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // High accuracy
+        long intervalMillis = Prefs.retrieveGPSRefreshRateMillisFromPreference();
+        float minUpdateDistanceMeters = Prefs.retrieveMinUpdateDistanceMetersFromPreference(); // 1 meters
+        long minUpdateIntervalMillis = Prefs.retrieveMinUpdateIntervalMillisFromPreference(); // 500 millis
+        long maxUpdateDelayMillis = Prefs.retrieveMaxUpdateDelayMillisFromPreference(); // 1000 millis
+        LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMillis);
+        builder.setMinUpdateDistanceMeters(minUpdateDistanceMeters); // Minimum distance change for updates (e.g., 10 meters)
+        builder.setMinUpdateIntervalMillis(minUpdateIntervalMillis); // minimum time between consecutive updates
+        builder.setMaxUpdateDelayMillis(maxUpdateDelayMillis); // The longest an update may be delayed before it is sent to the client
+        builder.setGranularity(Granularity.GRANULARITY_FINE); // Fine-grained location updates
+        builder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
+        locationRequest = builder.build();
+// TODO remove when debugged
+//        locationRequest = LocationRequest.create();
+//        locationRequest.setInterval(intervalMillis); //10000 Update interval in milliseconds (e.g., 10 seconds)
+//        locationRequest.setFastestInterval(5000); // Fastest update interval (e.g., 5 seconds)
+//        locationRequest.setSmallestDisplacement(1); // Minimum distance change for updates (e.g., 10 meters)
+//        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // High accuracy
     }
 
     private void createLocationCallback() {
@@ -159,18 +184,60 @@ public class FineLocationActivity extends AppCompatActivity
         mMap.animateCamera(cameraUpdate);
 
         // Add a marker for the current location
-        mMap.addMarker(new MarkerOptions().position(currentLatLng).title("Current Location"));
-        mMap.addMarker(new MarkerOptions().position(destinationLatLng).title("Destination"));
+        mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .title("Current Location")
+                //.icon(currentMarker)
+        );
+        mMap.addMarker(new MarkerOptions().position(destinationLatLng)
+                .title("Destination")
+                .icon(destinationMarker)
+        );
 
+        double distance = calculateDistanceHaversine(location.getLatitude(), location.getLongitude(),
+                destinationLatLng.latitude, destinationLatLng.longitude);
         // Draw a route to the destination
         drawRoute(currentLatLng, destinationLatLng);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                locationTextView.setText(String.format("Coordinates: %s, %s", location.getLatitude(), location.getLongitude()));
+                locationTextView.setText(String.format("Coordinates: %s, %s\nDistance: %s)",
+                        location.getLatitude(), location.getLongitude(), formatDistance(distance)));
             }
         });
+    }
+
+    private static String formatDistance(double distance) {
+        if (distance < 1000) {
+            return String.format("%.3fm", distance);
+        } else {
+            double kilometers = distance / 1000;
+            return String.format("%.3fkm", kilometers);
+        }
+    }
+
+    private static double calculateDistanceHaversine(double lat1, double lon1, double lat2, double lon2) {
+        final double EARTH_RADIUS = 6371000; // Earth's radius in meters
+
+        // Convert latitude and longitude from degrees to radians
+        double lat1Rad = Math.toRadians(lat1);
+        double lon1Rad = Math.toRadians(lon1);
+        double lat2Rad = Math.toRadians(lat2);
+        double lon2Rad = Math.toRadians(lon2);
+
+        // Calculate the differences between the latitudes and longitudes
+        double deltaLat = lat2Rad - lat1Rad;
+        double deltaLon = lon2Rad - lon1Rad;
+
+        // Apply the Haversine formula
+        double a = Math.pow(Math.sin(deltaLat / 2), 2) +
+                Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+                        Math.pow(Math.sin(deltaLon / 2), 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        // Calculate the distance
+        double distance = EARTH_RADIUS * c;
+        return distance;
     }
 
     private void drawRoute(LatLng start, LatLng end) {
@@ -178,7 +245,10 @@ public class FineLocationActivity extends AppCompatActivity
         mMap.clear();
 
         // Add a marker for the destination
-        mMap.addMarker(new MarkerOptions().position(end).title("Destination"));
+        mMap.addMarker(new MarkerOptions().position(destinationLatLng)
+                .title("Destination")
+                .icon(destinationMarker)
+        );
 
         // Create a polyline options object
         PolylineOptions polylineOptions = new PolylineOptions()
@@ -218,12 +288,12 @@ public class FineLocationActivity extends AppCompatActivity
     }
 
     private void updateArrowDirection(Location currentLocation) {
-        Location destinationLocation = new Location("");
+        Location destinationLocation = new Location("Destination");
         destinationLocation.setLatitude(destinationLatLng.latitude);
         destinationLocation.setLongitude(destinationLatLng.longitude);
 
-        //float bearing = currentLocation.bearingTo(destinationLocation);
-        float bearing = destinationLocation.bearingTo(currentLocation);
+        float bearing = currentLocation.bearingTo(destinationLocation);
+        //float bearing = destinationLocation.bearingTo(currentLocation);
         arrowView.setBearing(bearing);
     }
 }

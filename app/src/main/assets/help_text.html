@@ -8,10 +8,13 @@ Inspiration: Cindy Brown
 When dealing with Android's location service, getting the current location or the address from the location can take some time. You may notice a delay in acquisition until the operation is complete.
 
 <h3>Getting location</h3>
-Tap the pushpin icon <img src="pushpin_red.png"> to get the current location. The location request will be processed in background. When the location is acquired, a separate background task will be started to get the address (located below the icons). The address will be updated automatically.
+Tap the pushpin icon <img src="ic_menu_mylocation.png"> to get the current location. The location request will be processed in background. When the location is acquired, a separate background task will be started to get the address (located below the icons). The address will be updated automatically.
 
 <h3>Returning to the destination</h3>
-Tap the map icon <img src="navigate_map_nobackground.png"> to request Google turn-by-turn directions. A dialog will appear requesting the navigation method: <i>driving</i>, <i>walking</i>, <i>bicycle</i>, <i>transit</i>.
+<ul>
+    <li>Tap the map icon <img src="ic_menu_directions.png"> to request Google turn-by-turn directions. A dialog will appear requesting the navigation method: <i>driving</i>, <i>walking</i>, <i>bicycle</i>, <i>transit</i>.</li>
+    <li>Tap the map icon <img src="ic_menu_compas.png"> to request Google precise navigation. A dialog will appear reminding you that this is a battery-intensive operation.</li>
+</ul>
 
 NOTE:
 <li> it may take some time to get the current location and navigation directions</li>
@@ -25,15 +28,19 @@ A Home screen widget can be created to quickly set the current location and retu
 <ol>
     <li> long-press on the Home screen</li>
     <li> select <i>Widgets</i></li>
-    <li> tap <i>GetMeBack</i></li>
-    <li> press and hold the widget preview icon <br/><img src="pushpin_red.png"> <img src="navigate_map_nobackground.png"></li>
+    <li> tap <i>GetMeBack!</i></li>
+    <li> press and hold the widget preview icon <br/>
+        <img src="pushpin_red.png"> <img src="navigate_map_nobackground.png"> <img src="precise_navigate.png"></li>
     <li> drag the widget to the Home screen</li>
 </ol>
 <h3>Set destination</h3>
 Tap the <img src="pushpin_red.png"> icon to set your current location as destination location. This will be the location GetMeBack will return to when the <i>Return to destination</i> button is selected.
 
 <h3>Return to destination</h3>
-Tap the <img src="navigate_map_nobackground.png"> icon to launch Google's turn-by-turn navigation. It will prompt for the navigation mode, either driving, walking, bicycle, or transit.
+<ul>
+<li>Tap the <img src="navigate_map_nobackground.png"> icon to launch Google's turn-by-turn navigation. It will prompt for the navigation mode, either driving, walking, bicycle, or transit.</li>
+<li>Tap the <img src="precise_navigate.png"> icon to launch Google's precise location navigation.</li>
+</ul>
 
 <h3>Main screen</h3>
 Tapping on the main screen will prompt to set that as the new destination. It will display the geolocation and the street address. Tap OK to set as the new destination or Cancel.
@@ -46,3 +53,28 @@ Locations can be assigned a name and restored for future use. For example, you c
     <li><i>Restore location</i> Select one of the named locations to set as the current location.</li>
     <li><i>Forget location</i> Removed the location name.</li>
 </ol>
+
+<h2>Settings</h2>
+Various settings are available under the <i>Settings</i> menu. They are grouped under the following categories:
+
+<h3>GPS Settings</h3>
+<ul>
+    <li><i>GPS update interval</i>: Sets the desired interval of location updates.</li>
+    <li><i>Min update distance</i>: Sets the minimum distance required between consecutive location updates.
+        <br>If a derived location update is not at least the specified distance away from the previous location update delivered to the client, it will not be delivered. This may also allow additional power savings under some circumstances.</li>
+    <li><i>Min update interval</i>: Sets the fastest allowed interval of location updates.
+        <br>Location updates may arrive faster than the desired interval (setIntervalMillis(long)), but will never arrive faster than specified here.</li>
+    <li><i>Max update delay</i>: Sets the longest a location update may be delayed.
+        <br>This parameter controls location batching behavior. If this is set to a value at least 2x larger than the interval specified by setIntervalMillis(long), then a device may (but is not required to) save power by delivering locations in batches.
+        <br>If clients do not require immediate delivery, consider setting this value as high as is reasonable to allow for additional power savings. When the LocationRequest is built, the maximum update delay will be set to the max of the provided maximum update delay and the interval. This normalizes requests without batching to have the maximum update delay equal to the interval.
+        <br>For example, if a request is made with a 2s interval and a 10s maximum update delay, this implies that the device may choose to deliver batches of 5 locations every 10s (where each location in a batch represents a point in time ~2s after the previous).</li>
+</ul>
+
+<h3>Map Settings</h3>
+<ul>
+    <li><i>Show buildings</i>: Turns the 3D buildings layer on or off.</li>
+    <li><i>Show traffic</i>: Turns the traffic layer on or off.</li>
+    <li><i>Indoor mode</i>: Sets whether indoor maps should be enabled.
+        <br>Currently, indoor maps can only be shown on one map at a time and by default, this is the first map added to your application.
+        <br>To enable indoor maps on another map, you must first disable indoor maps on the original map. If you try to enable indoor maps when it is enabled on another map, nothing will happen and this will return false. When Indoor is not enabled for a map, all methods related to indoor will return null, or false.</li>
+</ul>

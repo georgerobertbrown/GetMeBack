@@ -33,6 +33,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="10dp"
         android:tint="@color/grey_80"
+        android:tooltipText="Map layers"
         app:backgroundTint="@color/grey_20"
         android:src="@android:drawable/ic_menu_mapmode" />
 
@@ -45,16 +46,18 @@
         android:layout_marginBottom="75dp"
         android:src="@android:drawable/ic_menu_directions"
         android:tint="@color/grey_80"
+        android:tooltipText="Use turn-by-turn directions to mark"
         app:backgroundTint="@color/grey_20" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabFineLocation"
+        android:id="@+id/fabPreciseLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="140dp"
         android:src="@android:drawable/ic_menu_compass"
+        android:tooltipText="Use precise location to mark"
         android:tint="@color/grey_80"
         app:backgroundTint="@color/grey_20" />
 
@@ -66,6 +69,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="205dp"
         android:src="@android:drawable/ic_menu_mylocation"
+        android:tooltipText="Mark location"
         android:tint="@color/grey_80"
         app:backgroundTint="@color/grey_20" />
 

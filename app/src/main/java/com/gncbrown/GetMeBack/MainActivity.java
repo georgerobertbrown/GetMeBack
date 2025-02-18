@@ -45,7 +45,6 @@ import androidx.fragment.app.FragmentManager;
 
 import com.gncbrown.GetMeBack.Utilities.BackgroundTask;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
-import com.gncbrown.GetMeBack.Utilities.KalmanFilter;
 import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.gncbrown.GetMeBack.directionhelpers.TaskLoadedCallback;
@@ -129,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements
     private static Double destinationLongitude = 0.00;
     private Double currentLatitude = 0.00;
     private Double currentLongitude = 0.00;
-    private KalmanFilter kalmanFilter = new KalmanFilter(0, 0, 1, 0.1);
 
     private long lastMarkerTime = System.currentTimeMillis();;
 
@@ -147,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String OPTION_RELEASE_HISTORY = "Release history";
     private static final String OPTION_NEW = "New...";
     private static final String OPTION_HOME = "Home";
+    private static final String OPTION_SETTINGS = "Settings";
 
     private static Handler addressResultHandler = new Handler() {
         @Override
@@ -213,6 +212,14 @@ public class MainActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "goToDestinationReceiver.onReceive");
             goToDestination();
+        }
+    };
+
+    private BroadcastReceiver preciseGoToDestinationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "preciseGoToDestinationReceiver.onReceive");
+            preciseGoToDestination();
         }
     };
 
@@ -327,29 +334,42 @@ public class MainActivity extends AppCompatActivity implements
         fabGo.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(getApplicationContext(), "Action: Return to mark", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Action: use turn-by-turn directions to mark", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
 
-        FloatingActionButton fabFineLocation = (FloatingActionButton) findViewById(R.id.fabFineLocation);
-        fabFineLocation.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fabPreciseLocation = (FloatingActionButton) findViewById(R.id.fabPreciseLocation);
+        fabPreciseLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (destinationLatitude == 0.0 && destinationLongitude == 0.0) {
                     Utils.showAlertDialog(mContext,
                             "Error", "Destination location not set");
                 } else {
-                    Toast.makeText(getApplicationContext(), "Return to mark", Toast.LENGTH_SHORT).show();
-                    fineGoToDestination();
-                    progressBar.setVisibility(View.GONE);
+                    final AlertDialog.Builder batteryDialog = new AlertDialog.Builder(MainActivity.this);
+                    batteryDialog.setTitle("Return to marked location")
+                            .setMessage("This uses precise location, which may drain the battery. Continue?")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                                    preciseGoToDestination();
+                                    progressBar.setVisibility(View.GONE);
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                                }
+                            });
+                    batteryDialog.show();
                 }
             }
         });
-        fabFineLocation.setOnLongClickListener(new View.OnLongClickListener() {
+        fabPreciseLocation.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(getApplicationContext(), "Action: Return to mark(fine location)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Action: use precise location to mark", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
@@ -390,8 +410,7 @@ public class MainActivity extends AppCompatActivity implements
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
             LatLng initialLatLng = Prefs.retrieveDestinationLocationFromPreference();
-            LatLng filteredLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
-            Log.d(TAG, "onCreate: initialLatLng=" + initialLatLng + ", filteredLatLng=" + filteredLatLng);
+            Log.d(TAG, "onCreate: initialLatLng=" + initialLatLng);
 
             destinationLatitude = initialLatLng.latitude;
             destinationLongitude = initialLatLng.longitude;
@@ -447,8 +466,7 @@ public class MainActivity extends AppCompatActivity implements
         homeAddress = Prefs.retrieveHomeAddressFromPreference();
         home = Prefs.retrieveHomeLocationFromPreference();
         LatLng latLng = Prefs.retrieveDestinationLocationFromPreference();
-        LatLng filteredLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
-        Log.d(TAG, "onResume: initialLatLng=" + latLng + ", filteredLatLng=" + filteredLatLng);
+        Log.d(TAG, "onResume: initialLatLng=" + latLng);
 
         if (latLng.latitude == 0.0f && latLng.longitude == 0.0f) {
             latLng = home;
@@ -549,14 +567,14 @@ public class MainActivity extends AppCompatActivity implements
         } else if (menuTitle.equals(OPTION_VALUES)) {
             moreSubmenuContext = "";
             LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
-            LatLng filteredLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
             String destinationAddress = Prefs.retrieveDestinationAddressFromPreference();
             Double destinationAltitude = Prefs.retrieveDestinationAltitudeFromPreference();
             LatLng homeLatLng = Prefs.retrieveHomeLocationFromPreference();
             String homeAddress = Prefs.retrieveHomeAddressFromPreference();
-            String values = String.format("Lat/Lng(Alt): %s, %s (%s)\nFiltered Lat/Lng: %s, %s\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
+            String values = String.format("Lat/Lng(Alt): %s, %s (%s)\nFiltered Lat/Lng: %s, %s\nUpdate interval: %s\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
                     destinationLatLng.latitude, destinationLatLng.longitude, destinationAltitude,
-                    filteredLatLng.latitude, filteredLatLng.longitude, destinationAddress,
+                    Prefs.retrieveGPSRefreshRateMillisFromPreference(),
+                    destinationAddress,
                     homeLatLng.latitude, homeLatLng.longitude, homeAddress);
             Utils.showAlertDialog(mContext, "Values", values);
 
@@ -592,6 +610,12 @@ public class MainActivity extends AppCompatActivity implements
         } else if (moreSubmenuContext.equals(OPTION_FORGET_LOCATION)) {
             Prefs.removeNamedLocationFromPreference(menuTitle);
             createOptionsMenu();
+
+        } else if (menuTitle.equals(OPTION_SETTINGS)) {
+            moreSubmenuContext = "";
+            Intent showSettings = new Intent(getApplicationContext(), SettingsActivity.class);
+            showSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.startActivity(showSettings);
         }
 
         return super.onOptionsItemSelected(item);
@@ -608,9 +632,14 @@ public class MainActivity extends AppCompatActivity implements
             Drawable welcomeIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_manage);
             Drawable valuesIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_view);
             Drawable historyIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_recent_history);
+            Drawable settingsIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_preferences);
 
             SubMenu infoMenu = optionsMenu.addSubMenu(1, Menu.FIRST, Menu.NONE, OPTION_INFO);
             infoMenu.clear();
+            MenuItem settingsItem = infoMenu.add(OPTION_SETTINGS);
+            settingsItem.setIcon(settingsIcon);
+            settingsItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM  | MenuItem.SHOW_AS_ACTION_WITH_TEXT); // always|withText
+            settingsItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM  | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
             MenuItem versionItem = infoMenu.add(OPTION_VERSION);
             versionItem.setIcon(versionIcon);
             MenuItem welcomeItem = infoMenu.add(OPTION_WELCOME);
@@ -622,17 +651,12 @@ public class MainActivity extends AppCompatActivity implements
             MenuItem historyItem = infoMenu.add(OPTION_RELEASE_HISTORY);
             historyItem.setIcon(historyIcon);
 
-//            optionsMenu.add(OPTION_WELCOME);
-//            optionsMenu.add(OPTION_HELP);
-//            optionsMenu.add(OPTION_RELEASE_HISTORY);
-//            optionsMenu.add(OPTION_VALUES);
-
             // Location submenu
-            SubMenu locationSubMenu = optionsMenu.addSubMenu(1, Menu.FIRST, Menu.NONE, OPTION_LOCATION);
+            SubMenu locationSubMenu = optionsMenu.addSubMenu(2, Menu.FIRST, Menu.NONE, OPTION_LOCATION);
             locationSubMenu.clear();
 
             // Restore submenu
-            SubMenu restoreSubMenu = locationSubMenu.addSubMenu(2, Menu.FIRST, Menu.NONE, OPTION_RESTORE_FROM);
+            SubMenu restoreSubMenu = locationSubMenu.addSubMenu(3, Menu.FIRST, Menu.NONE, OPTION_RESTORE_FROM);
             restoreSubMenu.clear();
             restoreSubMenu.add(OPTION_HOME);
             //restoreSubMenu.add(2, 1, Menu.NONE, "Item name");
@@ -641,7 +665,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             // Save submenu
-            SubMenu saveSubMenu = locationSubMenu.addSubMenu(3, Menu.FIRST, Menu.NONE, OPTION_SAVE_LOCATION_TO);
+            SubMenu saveSubMenu = locationSubMenu.addSubMenu(4, Menu.FIRST, Menu.NONE, OPTION_SAVE_LOCATION_TO);
             saveSubMenu.clear();
             saveSubMenu.add(OPTION_NEW);
             saveSubMenu.add(OPTION_HOME);
@@ -657,7 +681,6 @@ public class MainActivity extends AppCompatActivity implements
                     forgetSubMenu.add(l);
                 }
             }
-
         }
     }
 
@@ -687,8 +710,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConnected(Bundle bundle) {
         LatLng latLng = Prefs.retrieveDestinationLocationFromPreference();
-        LatLng filteredLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
-        Log.d(TAG, "onConnected: initialLatLng=" + latLng + ", filteredLatLng=" + filteredLatLng);
+        Log.d(TAG, "onConnected: initialLatLng=" + latLng);
 
         if (latLng.latitude == 0.0f && latLng.longitude == 0.0f) {
             latLng = home;
@@ -839,23 +861,15 @@ public class MainActivity extends AppCompatActivity implements
 
                         destinationLatitude = location.getLatitude();
                         destinationLongitude = location.getLongitude();
-                        double[] filteredLocation = kalmanFilter.update(destinationLatitude, destinationLongitude);
-                        Log.d(TAG, String.format("kalman lat=%s, lon=%s", filteredLocation[0], filteredLocation[1]));
 
                         LatLng updatedLocation = new LatLng(destinationLatitude, destinationLongitude);
-                        LatLng filteredLatLng = new LatLng(filteredLocation[0], filteredLocation[1]);
                         String locationString = String.format("%s, %s", destinationLatitude, destinationLongitude);
-                        String filteredLocationString = String.format("%s, %s", filteredLocation[0], filteredLocation[1]);
                         String msg = "Updated location: " + locationString;
-                        String filteredMsg = "Filtered location: " + filteredLocationString;
-                        Log.d(TAG, "onLocationResult: " + msg + ", " + filteredMsg);
 
                         Prefs.saveDestinationLocationToPreference(new LatLng(destinationLatitude, destinationLongitude));
-                        Prefs.saveFilteredDestinationLocationToPreference(filteredLatLng);
                         Prefs.saveDestinationAltitudeToPreference(location.getAltitude());
                         animateMap(updatedLocation, locationString);
                         toastMessage(msg);
-                        toastMessage(filteredMsg);
 
                         Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, mContext, addressResultHandler);
                     }
@@ -994,16 +1008,15 @@ public class MainActivity extends AppCompatActivity implements
         return String.format("%s, %s", destinationLatitude, destinationLongitude);
     }
 
-    private void fineGoToDestination() {
-        Intent intent = new Intent(this, FineLocationActivity.class);
+    private void preciseGoToDestination() {
+        Intent intent = new Intent(this, PreciseLocationActivity.class);
         startActivity(intent);
     }
 
     private void goToDestination() {
         String destination = Prefs.retrieveDestinationAddressFromPreference();
         LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
-        LatLng filteredLatLng = Prefs.retrieveFilteredDestinationLocationFromPreference();
-        Log.d(TAG, "goToDestination: destinationLatLng=" + destinationLatLng + ", filteredLatLng=" + filteredLatLng);
+        Log.d(TAG, "goToDestination: destinationLatLng=" + destinationLatLng);
 
         destinationLatitude = destinationLatLng.latitude;
         destinationLongitude = destinationLatLng.longitude;
@@ -1048,15 +1061,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void registerReceivers(boolean flag) {
-        Log.d("TAG", String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s", flag, alreadyRegistered,
+        Log.d("TAG", String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s+%s", flag, alreadyRegistered,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET,
-                ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET));
+                ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET,
+                ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET));
         if (flag) {
             if (!alreadyRegistered) {
                 try {
                     registerReceiver(updateDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET),
                             Context.RECEIVER_EXPORTED);
                     registerReceiver(gotoDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET),
+                            Context.RECEIVER_EXPORTED);
+                    registerReceiver(preciseGoToDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET),
                             Context.RECEIVER_EXPORTED);
                 } catch (Exception e) {
                     Log.e(TAG, "Could not register receivers");
@@ -1070,6 +1086,7 @@ public class MainActivity extends AppCompatActivity implements
                 try {
                     unregisterReceiver(updateDestinationReceiver);
                     unregisterReceiver(gotoDestinationReceiver);
+                    unregisterReceiver(preciseGoToDestinationReceiver);
                 } catch (Exception e) {
                     Log.e(TAG, "Could not unregister receivers");
                 }
