@@ -30,6 +30,7 @@ public class Prefs {
     private static final String PREF_KEY_SHOW_BUILDINGS = "showBuildings";
     private static final String PREF_KEY_SHOW_TRAFFIC = "showTraffic";
     private static final String PREF_KEY_INDOOR_MODE = "indoorMode";
+    private static final String PREF_KEY_DEBUG_MODE = "debugMode";
 
 
     public static String doubleToString(double value) {
@@ -326,5 +327,20 @@ public class Prefs {
     public static void saveIndoorModeToPreference(boolean value) {
         SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
         editor.putBoolean(PREF_KEY_INDOOR_MODE, value).apply();
+    }
+
+    public static boolean retrieveDebugModeFromPreference() {
+        boolean value = false;
+        try {
+            value = MainActivity.sharedPreferences.getBoolean(PREF_KEY_DEBUG_MODE, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    public static void saveDebugModeToPreference(boolean value) {
+        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+        editor.putBoolean(PREF_KEY_DEBUG_MODE, value).apply();
     }
 }

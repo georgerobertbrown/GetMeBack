@@ -2,7 +2,6 @@ package com.gncbrown.GetMeBack;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -23,6 +22,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 
 import java.io.IOException;
@@ -84,8 +84,9 @@ public class HelpActivity extends AppCompatActivity {
                 }
             }
         });
-        if (//!helpType.equals("welcome") ||
-            Utils.hasPermissions(MainActivity.requiredPermissions, context))
+        if (!Prefs.retrieveDebugModeFromPreference() && (
+                //!helpType.equals("welcome") ||
+            Utils.hasPermissions(MainActivity.requiredPermissions, context)))
             requestPermission.setVisibility(View.GONE);
 
         String releaseNotes = "";

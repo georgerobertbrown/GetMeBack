@@ -422,6 +422,10 @@ public class MainActivity extends AppCompatActivity implements
 
         registerReceivers(true);
 
+        String launchedFrom = getIntent().getStringExtra("ACTION");
+        if (launchedFrom != null && launchedFrom.equals(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET))
+            requestLocationUpdate(true);
+
         Prefs.saveFirstTimeToPreference(false);
     }
 

@@ -38,7 +38,7 @@ public class LocationService extends Service implements
 
     private static String[] navigationMethods;
 
-    private GoogleApiClient mGoogleApiClient;
+    private static GoogleApiClient mGoogleApiClient;
     private Location mLocation;
     private LocationManager mLocationManager;
     private LocationRequest mLocationRequest;

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topView"
     android:layout_width="match_parent"
@@ -18,13 +19,28 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/intervalTextView"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="GPS update interval: 10 seconds"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/intervalTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="GPS update interval: 10 seconds"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/intervalImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/intervalHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
 
     <SeekBar
         android:id="@+id/intervalSeekBar"
@@ -34,13 +50,27 @@
         android:max="99"
         android:min="1" />
 
-    <TextView
-        android:id="@+id/minUpdateDistanceTextView"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Min update distance: 1 meter"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/minUpdateDistanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Min update distance: 1 meter"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/minUpdateDistanceImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/minUpdateDistanceHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
 
     <SeekBar
         android:id="@+id/minUpdateDistanceSeekBar"
@@ -50,13 +80,27 @@
         android:max="50"
         android:min="1" />
 
-    <TextView
-        android:id="@+id/minUpdateIntervalTextView"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Min update interval: 1 ms"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/minUpdateIntervalTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Min update interval: 1 ms"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/minUpdateIntervalImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/minUpdateIntervalHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
 
     <SeekBar
         android:id="@+id/minUpdateIntervalSeekBar"
@@ -66,13 +110,27 @@
         android:max="50"
         android:min="1" />
 
-    <TextView
-        android:id="@+id/maxUpdateDelayTextView"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Min update interval: 1 ms"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/maxUpdateDelayTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Min update interval: 1 ms"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/maxUpdateDelayImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/maxUpdateDelayHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
 
     <SeekBar
         android:id="@+id/maxUpdateDelaySeekBar"
@@ -91,22 +149,81 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <CheckBox
-        android:id="@+id/buildingsCheckBox"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Show buildings" />
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/buildingsCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show buildings" />
+
+        <ImageButton
+            android:id="@+id/buildingsImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/showBuildingsHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/trafficCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show traffic" />
+
+        <ImageButton
+            android:id="@+id/trafficImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/showTrafficHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/indoorModeCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Indoor mode" />
+
+        <ImageButton
+            android:id="@+id/indoorModeImageButton"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="@android:color/transparent"
+            android:contentDescription="@string/indoorModeHint"
+            app:srcCompat="@android:drawable/ic_menu_help" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Miscellaneous Settings"
+        android:textColor="@color/blue"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <CheckBox
-        android:id="@+id/trafficCheckBox"
+        android:id="@+id/debugModeCheckBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show traffic" />
-
-    <CheckBox
-        android:id="@+id/indoorModeCheckBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Indoor mode" />
+        android:text="Debug mode" />
 
 </LinearLayout>

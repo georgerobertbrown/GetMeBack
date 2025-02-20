@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -57,9 +58,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         intervalTextView = findViewById(R.id.intervalTextView);
-        intervalTextView.setOnClickListener(v -> {
-            showPopup((TextView) v, mContext.getResources().getString(R.string.intervalHint));
-        });
         int currentInterval = (int)(Prefs.retrieveGPSRefreshRateMillisFromPreference());
         intervalSeekBar = findViewById(R.id.intervalSeekBar);
         intervalSeekBar.setProgress((int)(currentInterval/100));
@@ -81,11 +79,12 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
         intervalSeekBar.setMax(numberOfIncrements);
+        ImageButton intervalImageButton = (ImageButton)findViewById(R.id.intervalImageButton);
+        intervalImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.intervalHint));
+        });
 
         minUpdateIntervalTextView = findViewById(R.id.minUpdateIntervalTextView);
-        minUpdateIntervalTextView.setOnClickListener(v -> {
-            showPopup((TextView) v, mContext.getResources().getString(R.string.minUpdateIntervalHint));
-        });
         minUpdateIntervalSeekBar = findViewById(R.id.minUpdateIntervalSeekBar);
         long minUpdateInterval = Prefs.retrieveMinUpdateIntervalMillisFromPreference();
         minUpdateIntervalSeekBar.setProgress((int)(minUpdateInterval/100));
@@ -107,11 +106,12 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
         minUpdateIntervalSeekBar.setMax(numberOfIncrements);
+        ImageButton minUpdateIntervalImageButton = (ImageButton)findViewById(R.id.minUpdateIntervalImageButton);
+        minUpdateIntervalImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.minUpdateIntervalHint));
+        });
 
         minUpdateDistanceTextView = findViewById(R.id.minUpdateDistanceTextView);
-        minUpdateDistanceTextView.setOnClickListener(v -> {
-            showPopup((TextView) v, mContext.getResources().getString(R.string.minUpdateDistanceHint));
-        });
         minUpdateDistanceSeekBar = findViewById(R.id.minUpdateDistanceSeekBar);
         float minUpdateDistance = Prefs.retrieveMinUpdateDistanceMetersFromPreference();
         minUpdateDistanceSeekBar.setProgress((int)(minUpdateDistance));
@@ -131,11 +131,13 @@ public class SettingsActivity extends AppCompatActivity {
                 Prefs.saveMinUpdateDistanceMetersToPreference(value);
             }
         });
+        minUpdateDistanceSeekBar.setMax(50);
+        ImageButton minUpdateDistanceImageButton = (ImageButton)findViewById(R.id.minUpdateDistanceImageButton);
+        minUpdateDistanceImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.minUpdateDistanceHint));
+        });
 
         maxUpdateDelayTextView = findViewById(R.id.maxUpdateDelayTextView);
-        maxUpdateDelayTextView.setOnClickListener(v -> {
-            showPopup((TextView) v, mContext.getResources().getString(R.string.maxUpdateDelayHint));
-        });
         maxUpdateDelaySeekBar = findViewById(R.id.maxUpdateDelaySeekBar);
         long maxUpdateDelay = Prefs.retrieveMaxUpdateDelayMillisFromPreference();
         maxUpdateDelaySeekBar.setProgress((int)(maxUpdateDelay/100));
@@ -157,23 +159,47 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
         maxUpdateDelaySeekBar.setMax(numberOfIncrements);
+        ImageButton maxUpdateDelaylImageButton = (ImageButton)findViewById(R.id.maxUpdateDelayImageButton);
+        maxUpdateDelaylImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.maxUpdateDelayHint));
+        });
 
         CheckBox buildingsCheckBox = findViewById(R.id.buildingsCheckBox);
         buildingsCheckBox.setChecked(Prefs.retrieveShowBuildingsFromPreference());
         buildingsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Prefs.saveShowBuildingsToPreference(isChecked);
         });
+        ImageButton buildingsImageButton = (ImageButton)findViewById(R.id.buildingsImageButton);
+        buildingsImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.showBuildingsHint));
+        });
+
         CheckBox trafficCheckBox = findViewById(R.id.trafficCheckBox);
         trafficCheckBox.setChecked(Prefs.retrieveShowTrafficFromPreference());
         trafficCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Prefs.saveShowTrafficToPreference(isChecked);
         });
+        ImageButton trafficImageButton = (ImageButton)findViewById(R.id.trafficImageButton);
+        trafficImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.showTrafficHint));
+        });
+
         CheckBox indoorModeCheckBox = findViewById(R.id.indoorModeCheckBox);
         indoorModeCheckBox.setChecked(Prefs.retrieveIndoorModeFromPreference());
         indoorModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Prefs.saveIndoorModeToPreference(isChecked);
         });
+        ImageButton indoorModeImageButton = (ImageButton)findViewById(R.id.indoorModeImageButton);
+        indoorModeImageButton.setOnClickListener(v -> {
+            showPopup(v, mContext.getResources().getString(R.string.indoorModeHint));
+        });
 
+
+        CheckBox debugModeCheckBox = findViewById(R.id.debugModeCheckBox);
+        debugModeCheckBox.setChecked(Prefs.retrieveDebugModeFromPreference());
+        debugModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Prefs.saveDebugModeToPreference(isChecked);
+        });
     }
 
     private void updateIntervalTextView(int value) {
@@ -189,7 +215,7 @@ public class SettingsActivity extends AppCompatActivity {
         minUpdateDistanceTextView.setText("Min update distance: " + (int)(value) + "m");
     }
 
-    private void showPopup(TextView clickedView, String hint) {
+    private void showPopup(View clickedView, String hint) {
         // Inflate the popup layout
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_hint, null);

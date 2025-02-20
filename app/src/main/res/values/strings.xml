@@ -27,6 +27,7 @@
     <string name="showBuildingsHint">Turns the 3D buildings layer on or off.</string>
     <string name="showTrafficHint">Turns the traffic layer on or off.</string>
     <string name="indoorModeHint">Sets whether indoor maps should be enabled.</string>
+    <string name="debugModeHint">Enable debug mode to get more verbose logging.</string>
 
     <string-array name="navigationMethods">
         <item>Driving</item>
@@ -38,4 +39,11 @@
     <string name="ACTION_GET_LOCATION">com.gncbrown.GetMeBack.ACTION_GET_LOCATION</string>
     <string name="ACTION_GO_TO_DESTINATION">com.gncbrown.GetMeBack.ACTION_GO_TO_DESTINATION</string>
     <string name="ACTION_LAUNCH">com.gncbrown.GetMeBack.ACTION_LAUNCH</string>
+    <string name="ACTION_PRECISE_RETURN_TO_DESTINATION">com.gncbrown.GetMeBack.ACTION_PRECISE_RETURN_TO_DESTINATION</string>
+
+    <string name="ACTION_WIDGET_UPDATE_FROM_ACTIVITY">com.gncbrown.GetMeBack.ACTION_WIDGET_UPDATE_FROM_ACTIVITY</string>
+    <string name="ACTION_ACTIVITY_UPDATE_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_UPDATE_FROM_WIDGET</string>
+    <string name="ACTION_ACTIVITY_GO_TO_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_GO_TO_FROM_WIDGET</string>
+    <string name="ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET</string>
+    <string name="ACTION_ACTIVITY_LAUNCH_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_LAUNCH_FROM_WIDGET</string>
 </resources>

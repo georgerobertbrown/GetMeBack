@@ -13,7 +13,10 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
+
 import com.gncbrown.GetMeBack.GoToActivity;
+import com.gncbrown.GetMeBack.MainActivity;
 import com.gncbrown.GetMeBack.PreciseLocationActivity;
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Services.LocationService;
@@ -29,7 +32,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 	public static final String ACTION_BUTTON_SELECTED = "buttonSelected";
 	public static final String ACTION_MARK_LOCATION = "MarkMyLocation";
 	public static final String ACTION_RETURN_TO_DESTINATION = "ReturnToDestination";
-	public static final String ACTION_PRECISE_RETURN_TO_DESTINATION = "PreciseReturnToDestination";
+	public static final String ACTION_PRECISE_RETURN_TO_DESTINATION = "PreciseToDestination";
 	public static final String ACTION_SHOW_APP = "ShowApp";
 
 	public static final int REQ_CODE = 13;
@@ -94,15 +97,20 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 
 					switch (selectedButton) {
 						case ACTION_MARK_LOCATION:
-							setLocation(context);
+							Toast.makeText(context, "Marking location", Toast.LENGTH_SHORT).show();
+							requestLocationUpdate(context);
+							//setLocation(context);
 							break;
 						case ACTION_RETURN_TO_DESTINATION:
+							Toast.makeText(context, "Returning to destination", Toast.LENGTH_SHORT).show();
 							goToLocation(context);
 							break;
 						case ACTION_PRECISE_RETURN_TO_DESTINATION:
+							Toast.makeText(context, "Returning to destination(precise)", Toast.LENGTH_SHORT).show();
 							preciseGoToLocation(context);
 							break;
 						case (ACTION_SHOW_APP):
+							Toast.makeText(context, "Launching app", Toast.LENGTH_SHORT).show();
 							launchApp(context);
 							break;
 					}
@@ -168,7 +176,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 						AppWidgetManager.EXTRA_APPWIDGET_IDS, allWidgetIds);
 
 				PendingIntent returnToDestinationPendingIntent = PendingIntent.getBroadcast(
-						context, 0, returnToDestinationButtonWidget,
+						context, 2, returnToDestinationButtonWidget,
 						PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 				remoteViews.setOnClickPendingIntent(R.id.returnToDestination,
 						returnToDestinationPendingIntent);
@@ -183,9 +191,9 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 						AppWidgetManager.EXTRA_APPWIDGET_IDS, allWidgetIds);
 
 				PendingIntent preciseReturnToDestinationPendingIntent = PendingIntent.getBroadcast(
-						context, 0, preciseReturnToDestinationButtonWidget,
+						context, 3, preciseReturnToDestinationButtonWidget,
 						PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-				remoteViews.setOnClickPendingIntent(R.id.returnToDestination,
+				remoteViews.setOnClickPendingIntent(R.id.preciseReturnToDestination,
 						preciseReturnToDestinationPendingIntent);
 
 				appWidgetManager.updateAppWidget(widgetId, remoteViews);
@@ -196,18 +204,40 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		}
 	}
 
+	private void requestLocationUpdate(Context context) {
+		Log.d(TAG, "requestLocationUpdate");
+
+		String requestMethod = //"MainActivity";
+				//"Broadcast";
+				"Service";
+		if (requestMethod.equals("MainActivity")) { // TODO remove after testing
+			Intent launchIntent = new Intent(context, MainActivity.class);
+			launchIntent.putExtra("ACTION", ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
+			launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			context.startActivity(launchIntent);
+		} else if (requestMethod.equals("Broadcast")) {
+			Intent locationIntent = new Intent(ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
+			context.sendBroadcast(locationIntent);
+		} else {
+			setLocation(context);
+		}
+	}
+
 	private void setLocation(Context context) {
 		Log.d(TAG, "setLocation " + ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
 		Intent locationIntent = new Intent(context, LocationService.class);
 		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_GET_LOCATION));
 		try {
-			context.startForegroundService(locationIntent);
+			//context.startForegroundService(locationIntent);
+			ContextCompat.startForegroundService(context, locationIntent);
 			Toast.makeText(context, "Requesting location", Toast.LENGTH_SHORT).show();
 		} catch (Exception e) {
+			Log.e(TAG, "setLocation.startForegroundService: Could not start LocationService: " + e.getMessage());
 			try {
 				context.startService(locationIntent);
 				Utils.makeNotification(context, "Location", "Requesting location", REQ_CODE);
 			} catch (Exception e1) {
+				Log.e(TAG, "setLocation.startService: Could not start LocationService: " + e.getMessage());
 				String msg = "setLocation: Could not start LocationService: " + e1.getMessage();
 				Log.d(TAG, msg);
 				showMessage(context, msg);
