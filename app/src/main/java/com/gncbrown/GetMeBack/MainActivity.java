@@ -575,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements
             Double destinationAltitude = Prefs.retrieveDestinationAltitudeFromPreference();
             LatLng homeLatLng = Prefs.retrieveHomeLocationFromPreference();
             String homeAddress = Prefs.retrieveHomeAddressFromPreference();
-            String values = String.format("Lat/Lng(Alt): %s, %s (%s)\nFiltered Lat/Lng: %s, %s\nUpdate interval: %s\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
+            String values = String.format("Lat/Lng(Alt): %s, %s (%sm)\nUpdate interval: %sms\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
                     destinationLatLng.latitude, destinationLatLng.longitude, destinationAltitude,
                     Prefs.retrieveGPSRefreshRateMillisFromPreference(),
                     destinationAddress,

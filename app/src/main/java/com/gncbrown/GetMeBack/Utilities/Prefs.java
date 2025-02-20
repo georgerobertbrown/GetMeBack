@@ -1,6 +1,8 @@
 package com.gncbrown.GetMeBack.Utilities;
+
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.util.Log;
 
 import com.gncbrown.GetMeBack.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
@@ -60,9 +62,14 @@ public class Prefs {
 
     public static void saveLocationOfflineToPreference(Location location) {
         //Log.d(TAG, "saveLocationOfflineToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putString(PREF_KEY_GPS_CACHE_LATITUDE, doubleToString(location.getLatitude())).apply();
-        editor.putString(PREF_KEY_GPS_CACHE_LONGITUDE, doubleToString(location.getLongitude())).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putString(PREF_KEY_GPS_CACHE_LATITUDE, doubleToString(location.getLatitude())).apply();
+            editor.putString(PREF_KEY_GPS_CACHE_LONGITUDE, doubleToString(location.getLongitude())).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static LatLng retrieveDestinationLocationFromPreference() {
@@ -79,13 +86,18 @@ public class Prefs {
 
     public static void saveDestinationLocationToPreference(LatLng value) {
         //Log.d(TAG, "saveDestinationLocationToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        if (value != null) {
-            editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(value.latitude)).apply();
-            editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(value.longitude)).apply();
-        } else {
-            editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(0.0)).apply();
-            editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(0.0)).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            if (value != null) {
+                editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(value.latitude)).apply();
+                editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(value.longitude)).apply();
+            } else {
+                editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(0.0)).apply();
+                editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(0.0)).apply();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -101,8 +113,13 @@ public class Prefs {
 
     public static void saveDestinationAltitudeToPreference(double value) {
         //Log.d(TAG, "saveDestinationAltitudeToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putString(PREF_KEY_DESTINATION_ALTITUDE, doubleToString(value)).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putString(PREF_KEY_DESTINATION_ALTITUDE, doubleToString(value)).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static String retrieveDestinationAddressFromPreference() {
@@ -117,8 +134,13 @@ public class Prefs {
 
     public static void saveDestinationAddressToPreference(String value) {
         //Log.d(TAG, "saveDestinationAddressToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putString(PREF_KEY_DESTINATION_ADDRESS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putString(PREF_KEY_DESTINATION_ADDRESS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static LatLng retrieveHomeLocationFromPreference() {
@@ -146,54 +168,84 @@ public class Prefs {
     }
 
     public static String[] retrieveNamedLocations() {
-        Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
-        String[] arrayOfLocations = locations.toArray(new String[0]);
-        return arrayOfLocations;
+        try {
+            Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
+            String[] arrayOfLocations = locations.toArray(new String[0]);
+            return arrayOfLocations;
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static void saveToNamedLocations(String name) {
-        Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
-        locations.remove(name);
-        locations.add(name);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putStringSet(PREF_KEY_NAMED_LOCATIONS, locations).apply();
+        try {
+            Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
+            locations.remove(name);
+            locations.add(name);
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putStringSet(PREF_KEY_NAMED_LOCATIONS, locations).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static LatLng retrieveNamedLocation(String name) {
-        String locationFor = MainActivity.sharedPreferences.getString(name, "43.05687,-75.25245");
-        String[] latLngString = locationFor.split(",");
-        double latitude = 0.0;
-        double longitude = 0.0;
         try {
-            latitude = stringToDouble(latLngString[0]);
-            longitude = stringToDouble(latLngString[1]);
+            String locationFor = MainActivity.sharedPreferences.getString(name, "43.05687,-75.25245");
+            String[] latLngString = locationFor.split(",");
+            double latitude = 0.0;
+            double longitude = 0.0;
+            try {
+                latitude = stringToDouble(latLngString[0]);
+                longitude = stringToDouble(latLngString[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return new LatLng(latitude, longitude);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
         }
-        return new LatLng(latitude, longitude);
     }
 
     public static void removeNamedLocationFromPreference(String name) {
-        Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
-        locations.remove(name);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.remove(name);
-        editor.putStringSet(PREF_KEY_NAMED_LOCATIONS, locations).apply();
-        editor.commit();
+        try {
+            Set<String> locations = MainActivity.sharedPreferences.getStringSet(PREF_KEY_NAMED_LOCATIONS, new HashSet<String>());
+            locations.remove(name);
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.remove(name);
+            editor.putStringSet(PREF_KEY_NAMED_LOCATIONS, locations).apply();
+            editor.commit();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static void saveNamedLocationToPreference(String name, LatLng value) {
         //Log.d(TAG, "saveNamedLocationToPreference, name=" + name + ", value=" + value);
-        saveToNamedLocations(name);
+        try {
+            saveToNamedLocations(name);
 
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putString(name, String.format("%s,%s", value.latitude, value.longitude)).apply();
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putString(name, String.format("%s,%s", value.latitude, value.longitude)).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static void saveHomeAddressToPreference(String value) {
         //Log.d(TAG, "saveHomeAddressToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putString(PREF_KEY_HOME_ADDRESS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putString(PREF_KEY_HOME_ADDRESS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static String retrieveHomeAddressFromPreference() {
@@ -209,22 +261,33 @@ public class Prefs {
     public static boolean retrieveFirstTimeFromPreference() {
         boolean firstTime = true;
         try {
-            firstTime = MainActivity.sharedPreferences.getBoolean(PREF_KEY_FIRST_TIME, true);
+            try {
+                firstTime = MainActivity.sharedPreferences.getBoolean(PREF_KEY_FIRST_TIME, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return firstTime;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
         }
-        return firstTime;
     }
 
     public static void saveFirstTimeToPreference(boolean value) {
         //Log.d(TAG, "saveFirstTimeToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putBoolean(PREF_KEY_FIRST_TIME, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putBoolean(PREF_KEY_FIRST_TIME, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static long retrieveGPSRefreshRateMillisFromPreference() {
-        long value = 1000; // 1 second = 10000 ms
+        long value = 0; // 1 second = 10000 ms
         try {
+            value = 1000;
             value = MainActivity.sharedPreferences.getLong(PREF_KEY_GPS_REFRESH_RATE_MILLIS, value);
         } catch (Exception e) {
             e.printStackTrace();
@@ -234,8 +297,13 @@ public class Prefs {
 
     public static void saveGPSRefreshRateMillisToPreference(long value) {
         //Log.d(TAG, "saveGPSRefreshRateToPreference, value=" + value);
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putLong(PREF_KEY_GPS_REFRESH_RATE_MILLIS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putLong(PREF_KEY_GPS_REFRESH_RATE_MILLIS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static float retrieveMinUpdateDistanceMetersFromPreference() {
@@ -249,8 +317,13 @@ public class Prefs {
     }
 
     public static void saveMinUpdateDistanceMetersToPreference(float value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putFloat(PREF_KEY_MIN_UPDATE_DISTANCE_METERS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putFloat(PREF_KEY_MIN_UPDATE_DISTANCE_METERS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -265,8 +338,13 @@ public class Prefs {
     }
 
     public static void saveMinUpdateIntervalMillisToPreference(long value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putLong(PREF_KEY_MIN_UPDATE_INTERVAL_MILLIS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putLong(PREF_KEY_MIN_UPDATE_INTERVAL_MILLIS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static long retrieveMaxUpdateDelayMillisFromPreference() {
@@ -280,8 +358,13 @@ public class Prefs {
     }
 
     public static void saveMaxUpdateDelayMillisToPreference(long value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putLong(PREF_KEY_MAX_UPDATE_DELAY_MILLIS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putLong(PREF_KEY_MAX_UPDATE_DELAY_MILLIS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean retrieveShowBuildingsFromPreference() {
@@ -295,8 +378,13 @@ public class Prefs {
     }
 
     public static void saveShowBuildingsToPreference(boolean value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putBoolean(PREF_KEY_SHOW_BUILDINGS, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putBoolean(PREF_KEY_SHOW_BUILDINGS, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean retrieveShowTrafficFromPreference() {
@@ -310,8 +398,13 @@ public class Prefs {
     }
 
     public static void saveShowTrafficToPreference(boolean value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putBoolean(PREF_KEY_SHOW_TRAFFIC, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putBoolean(PREF_KEY_SHOW_TRAFFIC, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean retrieveIndoorModeFromPreference() {
@@ -325,8 +418,13 @@ public class Prefs {
     }
 
     public static void saveIndoorModeToPreference(boolean value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putBoolean(PREF_KEY_INDOOR_MODE, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putBoolean(PREF_KEY_INDOOR_MODE, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean retrieveDebugModeFromPreference() {
@@ -340,7 +438,12 @@ public class Prefs {
     }
 
     public static void saveDebugModeToPreference(boolean value) {
-        SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
-        editor.putBoolean(PREF_KEY_DEBUG_MODE, value).apply();
+        try {
+            SharedPreferences.Editor editor = MainActivity.sharedPreferences.edit();
+            editor.putBoolean(PREF_KEY_DEBUG_MODE, value).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "SharedPreferences error=" + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }
