@@ -36,6 +36,8 @@ public class LocationService extends Service implements
         com.google.android.gms.location.LocationListener {
     private static final String TAG = LocationService.class.getSimpleName();
 
+    private static Context context;
+
     private static String[] navigationMethods;
 
     private static GoogleApiClient mGoogleApiClient;
@@ -87,7 +89,7 @@ public class LocationService extends Service implements
     }
 
     private void goToDestination() {
-        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
+        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
         Double destinationLatitude = destinationLatLng.latitude;
         Double destinationLongitude = destinationLatLng.longitude;
 
@@ -236,8 +238,8 @@ public class LocationService extends Service implements
         String msg = "Acquired location: " + latitude + ", " + longitude + " (" + location.getAltitude() + ")";
         Log.d(TAG, "onLocationChanged: " + msg);
 
-        Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
-        Prefs.saveDestinationAltitudeToPreference(location.getAltitude());
+        Prefs.saveDestinationLocationToPreference(context, new LatLng(latitude, longitude));
+        Prefs.saveDestinationAltitudeToPreference(context, location.getAltitude());
         Utils.getAddressFromLocation(latitude, longitude, getApplicationContext(), locationAddressResultHandler);
 
         Utils.makeNotification(getApplicationContext(), "Acquire Location", msg, ButtonWidgetReceiver.REQ_CODE);
@@ -247,7 +249,7 @@ public class LocationService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Context context = getBaseContext();
+        context = getBaseContext();
         int myStartID = startId;
         Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
 
@@ -298,7 +300,7 @@ public class LocationService extends Service implements
         @Override
         public void handleMessage(Message msg) {
             String destinationAddress = msg.getData().getString("address");
-            Prefs.saveDestinationAddressToPreference(destinationAddress);
+            Prefs.saveDestinationAddressToPreference(context, destinationAddress);
             Log.d(TAG, "addressResultHandler, result=" + destinationAddress);
         }
     };

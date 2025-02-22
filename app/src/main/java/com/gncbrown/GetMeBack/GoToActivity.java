@@ -1,6 +1,7 @@
 package com.gncbrown.GetMeBack;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -21,6 +22,8 @@ import com.google.android.gms.maps.model.LatLng;
 public class GoToActivity extends AppCompatActivity {
     private static final String TAG = "GoToActivity";
 
+    private static Context context;
+
     private String[] navigationMethods;
 
     private static Double destinationLatitude = 0.00;
@@ -30,6 +33,8 @@ public class GoToActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
+
         setContentView(R.layout.activity_go_to);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             EdgeToEdge.enable(this);
@@ -45,12 +50,12 @@ public class GoToActivity extends AppCompatActivity {
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
 
-        LatLng initialLatLng = Prefs.retrieveDestinationLocationFromPreference();
+        LatLng initialLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
         Log.d(TAG, "onCreate: initialLatLng=" + initialLatLng);
 
         destinationLatitude = initialLatLng.latitude;
         destinationLongitude = initialLatLng.longitude;
-        destinationAddress = Prefs.retrieveDestinationAddressFromPreference();
+        destinationAddress = Prefs.retrieveDestinationAddressFromPreference(context);
 
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(GoToActivity.this);
         mBuilder.setTitle("Choose a navigation method to " + destinationAddress);

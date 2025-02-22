@@ -84,7 +84,7 @@ public class HelpActivity extends AppCompatActivity {
                 }
             }
         });
-        if (!Prefs.retrieveDebugModeFromPreference() && (
+        if (!Prefs.retrieveDebugModeFromPreference(context) && (
                 //!helpType.equals("welcome") ||
             Utils.hasPermissions(MainActivity.requiredPermissions, context)))
             requestPermission.setVisibility(View.GONE);

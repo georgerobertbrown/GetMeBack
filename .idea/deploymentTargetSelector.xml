@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="GetMeBack.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-20T03:46:34.894538800Z">
+        <DropdownSelection timestamp="2025-02-20T21:08:00.217139400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\George\.android\avd\Pixel_8_Pro_API_35.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=38241FDJG001ZL" />
             </handle>
           </Target>
         </DropdownSelection>

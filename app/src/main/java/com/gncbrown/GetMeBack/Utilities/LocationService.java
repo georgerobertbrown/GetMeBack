@@ -31,6 +31,8 @@ public class LocationService extends Service implements
         com.google.android.gms.location.LocationListener {
     private static final String TAG = "LocationService";
 
+    private static Context context;
+
     private static String[] navigationMethods;
 
     private GoogleApiClient mGoogleApiClient;
@@ -84,7 +86,7 @@ public class LocationService extends Service implements
     }
 
     private void goToDestination() {
-        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference();
+        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
         Log.d(TAG, String.format("destinationLatLng=%s, filteredDestinationLatLng=%s"));
 
         double destinationLatitude = destinationLatLng.latitude;
@@ -236,14 +238,14 @@ public class LocationService extends Service implements
         String msg = "Updated location: " + latitude + "," + longitude;
         Log.d(TAG, "onLocationChanged: " + msg);
 
-        Prefs.saveDestinationLocationToPreference(new LatLng(latitude, longitude));
+        Prefs.saveDestinationLocationToPreference(context, new LatLng(latitude, longitude));
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Context context = getBaseContext();
+        context = getBaseContext();
         int myStartID = startId;
         Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
 

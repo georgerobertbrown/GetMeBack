@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,7 +16,6 @@ import android.os.Looper;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -24,6 +24,9 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 public class LocationForegroundService extends Service {
+
+    private static Context context;
+
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
     private NotificationManager notificationManager;
@@ -31,6 +34,8 @@ public class LocationForegroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        context = getApplicationContext();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         startForeground(1, getNotification("Tracking location..."));
@@ -48,7 +53,7 @@ public class LocationForegroundService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     for (Location location : locationResult.getLocations()) {
-                        Prefs.saveLocationOfflineToPreference(location);
+                        Prefs.saveLocationOfflineToPreference(context, location);
                         updateNotification("Tracking: " + location.getLatitude() + ", " + location.getLongitude());
                     }
                 }

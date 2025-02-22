@@ -10,6 +10,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.Context;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -43,6 +44,9 @@ public class PreciseLocationActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnCameraIdleListener {
 
     private static final String TAG = "PreciseLocationActivity";
+
+    private static Context context;
+
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
@@ -83,7 +87,7 @@ public class PreciseLocationActivity extends AppCompatActivity
         locationTextView.setText("Coordinates: ");
 
         // Initialize the destination LatLng
-        destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(); //new LatLng(34.0522, -118.2437); // Example: Los Angeles
+        destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context); //new LatLng(34.0522, -118.2437); // Example: Los Angeles
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -99,9 +103,9 @@ public class PreciseLocationActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setBuildingsEnabled(Prefs.retrieveShowBuildingsFromPreference());
-        mMap.setTrafficEnabled(Prefs.retrieveShowTrafficFromPreference());
-        mMap.setIndoorEnabled(Prefs.retrieveIndoorModeFromPreference());
+        mMap.setBuildingsEnabled(Prefs.retrieveShowBuildingsFromPreference(context));
+        mMap.setTrafficEnabled(Prefs.retrieveShowTrafficFromPreference(context));
+        mMap.setIndoorEnabled(Prefs.retrieveIndoorModeFromPreference(context));
         mMap.setOnCameraIdleListener(this);
 
         // Check for location permission
@@ -123,10 +127,10 @@ public class PreciseLocationActivity extends AppCompatActivity
     }
 
     private void createLocationRequest() {
-        long intervalMillis = Prefs.retrieveGPSRefreshRateMillisFromPreference();
-        float minUpdateDistanceMeters = Prefs.retrieveMinUpdateDistanceMetersFromPreference(); // 1 meters
-        long minUpdateIntervalMillis = Prefs.retrieveMinUpdateIntervalMillisFromPreference(); // 500 millis
-        long maxUpdateDelayMillis = Prefs.retrieveMaxUpdateDelayMillisFromPreference(); // 1000 millis
+        long intervalMillis = Prefs.retrieveGPSRefreshRateMillisFromPreference(context);
+        float minUpdateDistanceMeters = Prefs.retrieveMinUpdateDistanceMetersFromPreference(context); // 1 meters
+        long minUpdateIntervalMillis = Prefs.retrieveMinUpdateIntervalMillisFromPreference(context); // 500 millis
+        long maxUpdateDelayMillis = Prefs.retrieveMaxUpdateDelayMillisFromPreference(context); // 1000 millis
         LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMillis);
         builder.setMinUpdateDistanceMeters(minUpdateDistanceMeters); // Minimum distance change for updates (e.g., 10 meters)
         builder.setMinUpdateIntervalMillis(minUpdateIntervalMillis); // minimum time between consecutive updates
