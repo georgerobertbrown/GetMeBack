@@ -21,11 +21,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private static Context context;
+    private static Preferences prefs;
 
     private SeekBar intervalSeekBar;
     private TextView intervalTextView;
@@ -42,6 +43,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+        prefs = new Preferences(context);
 
         setContentView(R.layout.activity_settings);
 
@@ -58,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         intervalTextView = findViewById(R.id.intervalTextView);
-        int currentInterval = (int)(Prefs.retrieveGPSRefreshRateMillisFromPreference(context));
+        int currentInterval = (int)(prefs.retrieveFromPreferences("GPSRefreshRateMillis"));
         intervalSeekBar = findViewById(R.id.intervalSeekBar);
         intervalSeekBar.setProgress((int)(currentInterval/100));
         updateIntervalTextView(currentInterval);
@@ -75,7 +77,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int milliseconds = 100 + (seekBar.getProgress() * 100);
-                Prefs.saveGPSRefreshRateMillisToPreference(context, milliseconds);
+                prefs.saveToPreferences("GPSRefreshRateMillis", milliseconds);
             }
         });
         intervalSeekBar.setMax(numberOfIncrements);
@@ -86,7 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         minUpdateIntervalTextView = findViewById(R.id.minUpdateIntervalTextView);
         minUpdateIntervalSeekBar = findViewById(R.id.minUpdateIntervalSeekBar);
-        long minUpdateInterval = Prefs.retrieveMinUpdateIntervalMillisFromPreference(context);
+        long minUpdateInterval = (long) prefs.retrieveFromPreferences("MinUpdateIntervalMillis");
         minUpdateIntervalSeekBar.setProgress((int)(minUpdateInterval/100));
         updateMinUpdateIntervalTextView(minUpdateInterval);
         minUpdateIntervalSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -102,7 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int milliseconds = 100 + (seekBar.getProgress() * 100);
-                Prefs.saveMinUpdateIntervalMillisToPreference(context, milliseconds);
+                prefs.saveToPreferences("MinUpdateIntervalMillis", milliseconds);
             }
         });
         minUpdateIntervalSeekBar.setMax(numberOfIncrements);
@@ -113,7 +115,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         minUpdateDistanceTextView = findViewById(R.id.minUpdateDistanceTextView);
         minUpdateDistanceSeekBar = findViewById(R.id.minUpdateDistanceSeekBar);
-        float minUpdateDistance = Prefs.retrieveMinUpdateDistanceMetersFromPreference(context);
+        float minUpdateDistance = (float) prefs.retrieveFromPreferences("MinUpdateDistanceMeters");
         minUpdateDistanceSeekBar.setProgress((int)(minUpdateDistance));
         updateMinUpdateDistanceTextView(minUpdateDistance);
         minUpdateDistanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -128,7 +130,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int value = seekBar.getProgress(); // Convert back to milliseconds
-                Prefs.saveMinUpdateDistanceMetersToPreference(context, value);
+                prefs.saveToPreferences("MinUpdateDistanceMeters", value);
             }
         });
         minUpdateDistanceSeekBar.setMax(50);
@@ -139,7 +141,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         maxUpdateDelayTextView = findViewById(R.id.maxUpdateDelayTextView);
         maxUpdateDelaySeekBar = findViewById(R.id.maxUpdateDelaySeekBar);
-        long maxUpdateDelay = Prefs.retrieveMaxUpdateDelayMillisFromPreference(context);
+        long maxUpdateDelay = (long) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
         maxUpdateDelaySeekBar.setProgress((int)(maxUpdateDelay/100));
         updateMaxUpdateDelayTextView(maxUpdateDelay);
         maxUpdateDelaySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -155,7 +157,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int milliseconds = 100 + (seekBar.getProgress() * 100);
-                Prefs.saveMaxUpdateDelayMillisToPreference(context, milliseconds);
+                prefs.saveToPreferences("MaxUpdateDelayMillis", milliseconds);
             }
         });
         maxUpdateDelaySeekBar.setMax(numberOfIncrements);
@@ -165,9 +167,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         CheckBox buildingsCheckBox = findViewById(R.id.buildingsCheckBox);
-        buildingsCheckBox.setChecked(Prefs.retrieveShowBuildingsFromPreference(context));
+        buildingsCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowBuildings"));
         buildingsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Prefs.saveShowBuildingsToPreference(context, isChecked);
+            prefs.saveToPreferences("ShowBuildings", isChecked);
         });
         ImageButton buildingsImageButton = (ImageButton)findViewById(R.id.buildingsImageButton);
         buildingsImageButton.setOnClickListener(v -> {
@@ -175,9 +177,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         CheckBox trafficCheckBox = findViewById(R.id.trafficCheckBox);
-        trafficCheckBox.setChecked(Prefs.retrieveShowTrafficFromPreference(context));
+        trafficCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowTraffic"));
         trafficCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Prefs.saveShowTrafficToPreference(context, isChecked);
+            prefs.saveToPreferences("ShowTraffic", isChecked);
         });
         ImageButton trafficImageButton = (ImageButton)findViewById(R.id.trafficImageButton);
         trafficImageButton.setOnClickListener(v -> {
@@ -185,9 +187,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         CheckBox indoorModeCheckBox = findViewById(R.id.indoorModeCheckBox);
-        indoorModeCheckBox.setChecked(Prefs.retrieveIndoorModeFromPreference(context));
+        indoorModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("IndoorMode"));
         indoorModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Prefs.saveIndoorModeToPreference(context, isChecked);
+            prefs.saveToPreferences("IndoorMode", isChecked);
         });
         ImageButton indoorModeImageButton = (ImageButton)findViewById(R.id.indoorModeImageButton);
         indoorModeImageButton.setOnClickListener(v -> {
@@ -196,9 +198,9 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         CheckBox debugModeCheckBox = findViewById(R.id.debugModeCheckBox);
-        debugModeCheckBox.setChecked(Prefs.retrieveDebugModeFromPreference(context));
+        debugModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("DebugMode"));
         debugModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Prefs.saveDebugModeToPreference(context, isChecked);
+            prefs.saveToPreferences("DebugMode", isChecked);
         });
     }
 

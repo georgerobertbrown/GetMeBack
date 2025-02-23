@@ -45,8 +45,8 @@ import androidx.fragment.app.FragmentManager;
 
 import com.gncbrown.GetMeBack.Utilities.BackgroundTask;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
+import com.gncbrown.GetMeBack.Utilities.NamedLocation;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
-import com.gncbrown.GetMeBack.Utilities.Prefs;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.gncbrown.GetMeBack.directionhelpers.TaskLoadedCallback;
 import com.google.android.gms.common.ConnectionResult;
@@ -89,9 +89,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final int requestCode = 40;
     public static Context context;
+    public static Preferences prefs;
     public static SharedPreferences sharedPreferences;
-
-    private static Preferences prefs;
 
     private static ProgressBar progressBar;
 
@@ -154,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void handleMessage(Message msg) {
             destinationAddress = msg.getData().getString("address");
-            Prefs.saveDestinationAddressToPreference(context, destinationAddress);
+            prefs.saveToPreferences("DestinationAddress", destinationAddress);
             progress(false);
             Log.d(TAG, "onLocationChanged: getAddressFromLocation, result=" + destinationAddress);
         }
@@ -180,11 +179,11 @@ public class MainActivity extends AppCompatActivity implements
                             LatLng newPoint = new LatLng(newLatitide, newLongitude);
                             destinationLatitude = newLatitide;
                             destinationLongitude = newLongitude;
-                            Prefs.saveDestinationLocationToPreference(context, newPoint);
+                            prefs.saveToPreferences("DestinationLocation", newPoint);
 
                             locationSource = LocationSource.DestinationLocation;
                             destinationAddress = newDestinationAddress;
-                            Prefs.saveDestinationAddressToPreference(context, destinationAddress);
+                            prefs.saveToPreferences("DestinationAddress", destinationAddress);
                             String markerLabel = getMarkerLabel();
                             animateMap(newPoint, markerLabel);
                         }
@@ -377,10 +376,10 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        if (Prefs.retrieveFirstTimeFromPreference(context)) {
-            Prefs.saveDestinationLocationToPreference(context, home);
-            Prefs.saveHomeLocationToPreference(context, home);
-            Prefs.saveHomeAddressToPreference(context, homeAddress);
+        if ((boolean)prefs.retrieveFromPreferences("FirstTime")) {
+            prefs.saveToPreferences("DestinationLocation", home);
+            prefs.saveToPreferences("HomeLocation", home);
+            prefs.saveToPreferences("HomeAddress", homeAddress);
 
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
@@ -412,12 +411,12 @@ public class MainActivity extends AppCompatActivity implements
                     .build();
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-            LatLng initialLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
+            LatLng initialLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
             Log.d(TAG, "onCreate: initialLatLng=" + initialLatLng);
 
             destinationLatitude = initialLatLng.latitude;
             destinationLongitude = initialLatLng.longitude;
-            destinationAddress = Prefs.retrieveDestinationAddressFromPreference(context);
+            destinationAddress = (String) prefs.retrieveFromPreferences("DestinationAddress");
 
             Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, context,
                     addressResultHandler);
@@ -429,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements
         if (launchedFrom != null && launchedFrom.equals(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET))
             requestLocationUpdate(true);
 
-        Prefs.saveFirstTimeToPreference(context, false);
+        prefs.saveToPreferences("FirstTime", false);
     }
 
     @Override
@@ -461,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         registerReceivers(false);
         // TODO Should this be here?
-        //Prefs.saveDestinationLocationToPreference(context, new LatLng(destinationLatitude, destinationLongitude));
+        //prefs.saveToPreferences("DestinationLocation", new LatLng(destinationLatitude, destinationLongitude));
     }
 
     @Override
@@ -469,10 +468,10 @@ public class MainActivity extends AppCompatActivity implements
         super.onResume();
         registerReceivers(true);
 
-        destinationAddress = Prefs.retrieveDestinationAddressFromPreference(context); // null;
-        homeAddress = Prefs.retrieveHomeAddressFromPreference(context);
-        home = Prefs.retrieveHomeLocationFromPreference(context);
-        LatLng latLng = Prefs.retrieveDestinationLocationFromPreference(context);
+        destinationAddress = (String) prefs.retrieveFromPreferences("DestinationAddress"); // null;
+        homeAddress = (String) prefs.retrieveFromPreferences("HomeAddress");
+        home = (LatLng) prefs.retrieveFromPreferences("HomeLocation");
+        LatLng latLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Log.d(TAG, "onResume: initialLatLng=" + latLng);
 
         if (latLng.latitude == 0.0f && latLng.longitude == 0.0f) {
@@ -495,7 +494,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO should this be here?
         //LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
-        //Prefs.saveDestinationLocationToPreference(context, latLng);
+        //prefs.saveToPreferences("DestinationLocation", latLng);
     }
 
     private String getUrl(LatLng origin, LatLng destination, String directionMode) {
@@ -573,14 +572,14 @@ public class MainActivity extends AppCompatActivity implements
 
         } else if (menuTitle.equals(OPTION_VALUES)) {
             moreSubmenuContext = "";
-            LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
-            String destinationAddress = Prefs.retrieveDestinationAddressFromPreference(context);
-            Double destinationAltitude = Prefs.retrieveDestinationAltitudeFromPreference(context);
-            LatLng homeLatLng = Prefs.retrieveHomeLocationFromPreference(context);
-            String homeAddress = Prefs.retrieveHomeAddressFromPreference(context);
+            LatLng destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
+            String destinationAddress = (String) prefs.retrieveFromPreferences("DestinationAddress");
+            Double destinationAltitude = (Double) prefs.retrieveFromPreferences("DestinationAltitude");
+            LatLng homeLatLng = (LatLng) prefs.retrieveFromPreferences("HomeLocation");
+            String homeAddress = (String) prefs.retrieveFromPreferences("HomeAddress");
             String values = String.format("Lat/Lng(Alt): %s, %s (%sm)\nUpdate interval: %sms\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
                     destinationLatLng.latitude, destinationLatLng.longitude, destinationAltitude,
-                    Prefs.retrieveGPSRefreshRateMillisFromPreference(context),
+                    prefs.retrieveFromPreferences("GPSRefreshRateMillis"),
                     destinationAddress,
                     homeLatLng.latitude, homeLatLng.longitude, homeAddress);
             Utils.showAlertDialog(context, "Values", values);
@@ -615,7 +614,9 @@ public class MainActivity extends AppCompatActivity implements
             restoreFrom(menuTitle);
 
         } else if (moreSubmenuContext.equals(OPTION_FORGET_LOCATION)) {
-            Prefs.removeNamedLocationFromPreference(context, menuTitle);
+            if (!menuTitle.equals(OPTION_HOME))
+                prefs.removeNamedLocationFromPreference(context, menuTitle);
+            //Prefs.removeNamedLocationFromPreference(context, menuTitle); // TODO remove this
             createOptionsMenu();
 
         } else if (menuTitle.equals(OPTION_SETTINGS)) {
@@ -630,7 +631,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private void createOptionsMenu() {
         Log.d(TAG, "createOptionsMenu");
-        String[] locations = Prefs.retrieveNamedLocations(context);
+        List<NamedLocation> namedLocations = prefs.retrieveNamedLocationsFromPreference(context);
+        //String[] locations = Prefs.retrieveNamedLocations(context);
         if (optionsMenu != null) {
             optionsMenu.clear();
 
@@ -665,28 +667,36 @@ public class MainActivity extends AppCompatActivity implements
             // Restore submenu
             SubMenu restoreSubMenu = locationSubMenu.addSubMenu(3, Menu.FIRST, Menu.NONE, OPTION_RESTORE_FROM);
             restoreSubMenu.clear();
-            restoreSubMenu.add(OPTION_HOME);
-            //restoreSubMenu.add(2, 1, Menu.NONE, "Item name");
-            for (String l : locations) {
-                restoreSubMenu.add(l);
+//            restoreSubMenu.add(OPTION_HOME);
+            for (NamedLocation namedLocation : namedLocations) {
+                restoreSubMenu.add(namedLocation.getName());
             }
+//            for (String l : locations) {
+//                restoreSubMenu.add(l);
+//            }
 
             // Save submenu
             SubMenu saveSubMenu = locationSubMenu.addSubMenu(4, Menu.FIRST, Menu.NONE, OPTION_SAVE_LOCATION_TO);
             saveSubMenu.clear();
             saveSubMenu.add(OPTION_NEW);
-            saveSubMenu.add(OPTION_HOME);
-            for (String l : locations) {
-                saveSubMenu.add(l);
+//            saveSubMenu.add(OPTION_HOME);
+            for (NamedLocation namedLocation : namedLocations) {
+                saveSubMenu.add(namedLocation.getName());
             }
+//            for (String l : locations) {
+//                saveSubMenu.add(l);
+//            }
 
             // Forget submenu
-            if (locations.length > 0) {
+            if (!namedLocations.isEmpty()) {//locations.length > 0) {
                 SubMenu forgetSubMenu = locationSubMenu.addSubMenu(2, Menu.FIRST, Menu.NONE, OPTION_FORGET_LOCATION);
                 forgetSubMenu.clear();
-                for (String l : locations) {
-                    forgetSubMenu.add(l);
+                for (NamedLocation namedLocation : namedLocations) {
+                    forgetSubMenu.add(namedLocation.getName());
                 }
+//                for (String l : locations) {
+//                    forgetSubMenu.add(l);
+//                }
             }
         }
     }
@@ -716,7 +726,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(Bundle bundle) {
-        LatLng latLng = Prefs.retrieveDestinationLocationFromPreference(context);
+        LatLng latLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Log.d(TAG, "onConnected: initialLatLng=" + latLng);
 
         if (latLng.latitude == 0.0f && latLng.longitude == 0.0f) {
@@ -780,7 +790,7 @@ public class MainActivity extends AppCompatActivity implements
             markerLabel = getMarkerLabel();
 
             LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
-            Prefs.saveDestinationLocationToPreference(context, latLng);
+            prefs.saveToPreferences("DestinationLocation", latLng);
 
             animateMap(latLng, markerLabel);
         } else {
@@ -873,8 +883,8 @@ public class MainActivity extends AppCompatActivity implements
                         String locationString = String.format("%s, %s", destinationLatitude, destinationLongitude);
                         String msg = "Updated location: " + locationString;
 
-                        Prefs.saveDestinationLocationToPreference(context, new LatLng(destinationLatitude, destinationLongitude));
-                        Prefs.saveDestinationAltitudeToPreference(context, location.getAltitude());
+                        prefs.saveToPreferences("DestinationLocation", new LatLng(destinationLatitude, destinationLongitude));
+                        prefs.saveToPreferences("DestinationAltitude", location.getAltitude());
                         animateMap(updatedLocation, locationString);
                         toastMessage(msg);
 
@@ -947,10 +957,10 @@ public class MainActivity extends AppCompatActivity implements
                 homeAddress = inputText.getText().toString();
 
                 progress(true);
-                home = Utils.getLocationFromAddress(destinationAddress, getApplicationContext()); //mContext);
-                Prefs.saveHomeAddressToPreference(context, destinationAddress);
-                Prefs.saveHomeLocationToPreference(context, home);
-                Prefs.saveDestinationLocationToPreference(context, home);
+                home = Utils.getLocationFromAddress(getApplicationContext(), destinationAddress); //mContext);
+                prefs.saveToPreferences("HomeAddress", destinationAddress);
+                prefs.saveToPreferences("HomeLocation", home);
+                prefs.saveToPreferences("DestinationLocation", home);
 
                 destinationLatitude = home.latitude;
                 destinationLongitude = home.longitude;
@@ -972,11 +982,11 @@ public class MainActivity extends AppCompatActivity implements
     private void restoreHome() {
         Toast.makeText(this, "Restoring from Home", Toast.LENGTH_SHORT).show();
         progress(true);
-        LatLng homeLocation = Prefs.retrieveHomeLocationFromPreference(context);
-        String homeAddress = Prefs.retrieveHomeAddressFromPreference(context);
+        LatLng homeLocation = (LatLng) prefs.retrieveFromPreferences("HomeLocation");
+        String homeAddress = (String) prefs.retrieveFromPreferences("HomeAddress");
 
-        Prefs.saveDestinationLocationToPreference(context, homeLocation);
-        Prefs.saveHomeAddressToPreference(context, homeAddress);
+        prefs.saveToPreferences("DestinationLocation", homeLocation);
+        prefs.saveToPreferences("HomeAddress", homeAddress);
         animateMap(homeLocation, homeAddress);
         progress(false);
     }
@@ -984,10 +994,12 @@ public class MainActivity extends AppCompatActivity implements
     private void restoreFrom(String name) {
         Toast.makeText(this, "Restoring from " + name, Toast.LENGTH_SHORT).show();
         progress(true);
-        LatLng restoredLocation = Prefs.retrieveNamedLocation(context, name);
+        prefs.retrieveNamedLocationsFromPreference(context);
+        LatLng restoredLocation = prefs.retrieveNamedLocationFromPreference(context, name);
+        //LatLng restoredLocation = Prefs.retrieveNamedLocation(context, name); // TODO remove this
         destinationLatitude = restoredLocation.latitude;
         destinationLongitude = restoredLocation.longitude;
-        Prefs.saveDestinationLocationToPreference(context, restoredLocation);
+        prefs.saveToPreferences("DestinationLocation", restoredLocation);
         Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, context,
                 addressResultHandler);
         animateMap(restoredLocation, "Address pending");
@@ -1023,8 +1035,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void goToDestination() {
-        String destination = Prefs.retrieveDestinationAddressFromPreference(context);
-        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
+        String destination = (String) prefs.retrieveFromPreferences("DestinationAddress");
+        LatLng destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Log.d(TAG, "goToDestination: destinationLatLng=" + destinationLatLng);
 
         destinationLatitude = destinationLatLng.latitude;
@@ -1131,7 +1143,9 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String mText = input.getText().toString();
-                Prefs.saveNamedLocationToPreference(context, mText, new LatLng(destinationLatitude, destinationLongitude));
+                //prefs.saveToPreferences("NamedLocation", new LatLng(destinationLatitude, destinationLongitude));// TODO remove this
+                prefs.saveNamedLocationToPreferences(context, new NamedLocation(mText, new LatLng(destinationLatitude, destinationLongitude)));
+                createOptionsMenu();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

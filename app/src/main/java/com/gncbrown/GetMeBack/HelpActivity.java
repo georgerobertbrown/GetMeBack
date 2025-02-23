@@ -22,7 +22,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 
 import java.io.IOException;
@@ -36,6 +36,9 @@ import java.util.regex.Pattern;
 public class HelpActivity extends AppCompatActivity {
     private static final String TAG = HelpActivity.class.getSimpleName();
 
+    private static Context context;
+    private static Preferences prefs;
+
     private String helpType = "help";
 
     private static final int permissionsCode = 42;
@@ -46,6 +49,8 @@ public class HelpActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
+        prefs = new Preferences(context);
 
 //		Log.d(TAG, "onCreate:HelpActivity");
         try {
@@ -84,7 +89,7 @@ public class HelpActivity extends AppCompatActivity {
                 }
             }
         });
-        if (!Prefs.retrieveDebugModeFromPreference(context) && (
+        if (!(boolean)prefs.retrieveFromPreferences("DebugMode") && (
                 //!helpType.equals("welcome") ||
             Utils.hasPermissions(MainActivity.requiredPermissions, context)))
             requestPermission.setVisibility(View.GONE);

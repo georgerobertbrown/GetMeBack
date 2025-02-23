@@ -38,37 +38,25 @@ public class Prefs {
     private static final String PREF_KEY_DEBUG_MODE = "debugMode";
 
 
-    public static String doubleToString(double value) {
-        return String.format("%f", value);
-    }
-
-    public static double stringToDouble(String value) {
-        try {
-            return Double.parseDouble(value);
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
-
 
     public static LatLng  retrieveLocationOfflineFromPreference(Context context) {
-        String latitude = doubleToString(0.0);
-        String longitude = doubleToString(0.0);
+        String latitude = Utils.doubleToString(0.0);
+        String longitude = Utils.doubleToString(0.0);
         try {
             latitude = context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_GPS_CACHE_LATITUDE, latitude);
             longitude = context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_GPS_CACHE_LONGITUDE, longitude);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new LatLng(stringToDouble(latitude), stringToDouble(longitude));
+        return new LatLng(Utils.stringToDouble(latitude), Utils.stringToDouble(longitude));
     }
 
     public static void  saveLocationOfflineToPreference(Context context, Location location) {
         //Log.d(TAG, "saveLocationOfflineToPreference, value=" + value);
         try {
             SharedPreferences.Editor editor = context.getSharedPreferences("USER", MODE_PRIVATE).edit();
-            editor.putString(PREF_KEY_GPS_CACHE_LATITUDE, doubleToString(location.getLatitude())).apply();
-            editor.putString(PREF_KEY_GPS_CACHE_LONGITUDE, doubleToString(location.getLongitude())).apply();
+            editor.putString(PREF_KEY_GPS_CACHE_LATITUDE, Utils.doubleToString(location.getLatitude())).apply();
+            editor.putString(PREF_KEY_GPS_CACHE_LONGITUDE, Utils.doubleToString(location.getLongitude())).apply();
         } catch (Exception e) {
             Log.e(TAG, "SharedPreferences error=" + e.getMessage());
             throw new RuntimeException(e);
@@ -79,8 +67,8 @@ public class Prefs {
         double latitude = MainActivity.home.latitude;
         double longitude = MainActivity.home.longitude;
         try {
-            latitude = stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(MainActivity.home.latitude)));
-            longitude = stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(MainActivity.home.longitude)));
+            latitude = Utils.stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_DESTINATION_LATITUDE, Utils.doubleToString(MainActivity.home.latitude)));
+            longitude = Utils.stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_DESTINATION_LONGITUDE, Utils.doubleToString(MainActivity.home.longitude)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,11 +80,11 @@ public class Prefs {
         try {
             SharedPreferences.Editor editor = context.getSharedPreferences("USER", MODE_PRIVATE).edit();
             if (value != null) {
-                editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(value.latitude)).apply();
-                editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(value.longitude)).apply();
+                editor.putString(PREF_KEY_DESTINATION_LATITUDE, Utils.doubleToString(value.latitude)).apply();
+                editor.putString(PREF_KEY_DESTINATION_LONGITUDE, Utils.doubleToString(value.longitude)).apply();
             } else {
-                editor.putString(PREF_KEY_DESTINATION_LATITUDE, doubleToString(0.0)).apply();
-                editor.putString(PREF_KEY_DESTINATION_LONGITUDE, doubleToString(0.0)).apply();
+                editor.putString(PREF_KEY_DESTINATION_LATITUDE, Utils.doubleToString(0.0)).apply();
+                editor.putString(PREF_KEY_DESTINATION_LONGITUDE, Utils.doubleToString(0.0)).apply();
             }
         } catch (Exception e) {
             Log.e(TAG, "SharedPreferences error=" + e.getMessage());
@@ -107,7 +95,7 @@ public class Prefs {
     public static double  retrieveDestinationAltitudeFromPreference(Context context) {
         double altitude = 0.0;
         try {
-            altitude = stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_DESTINATION_ALTITUDE, doubleToString(altitude)));
+            altitude = Utils.stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_DESTINATION_ALTITUDE, Utils.doubleToString(altitude)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,7 +106,7 @@ public class Prefs {
         //Log.d(TAG, "saveDestinationAltitudeToPreference, value=" + value);
         try {
             SharedPreferences.Editor editor = context.getSharedPreferences("USER", MODE_PRIVATE).edit();
-            editor.putString(PREF_KEY_DESTINATION_ALTITUDE, doubleToString(value)).apply();
+            editor.putString(PREF_KEY_DESTINATION_ALTITUDE, Utils.doubleToString(value)).apply();
         } catch (Exception e) {
             Log.e(TAG, "SharedPreferences error=" + e.getMessage());
             throw new RuntimeException(e);
@@ -150,8 +138,8 @@ public class Prefs {
         double latitude = 0.0;
         double longitude = 0.0;
         try {
-            latitude = stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_HOME_LATITUDE, doubleToString(MainActivity.home.latitude)));
-            longitude = stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_HOME_LONGITUDE, doubleToString(MainActivity.home.longitude)));
+            latitude = Utils.stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_HOME_LATITUDE, Utils.doubleToString(MainActivity.home.latitude)));
+            longitude = Utils.stringToDouble(context.getSharedPreferences("USER", MODE_PRIVATE).getString(PREF_KEY_HOME_LONGITUDE, Utils.doubleToString(MainActivity.home.longitude)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -162,11 +150,11 @@ public class Prefs {
         //Log.d(TAG, "saveDestinationToPreference, value=" + value);
         SharedPreferences.Editor editor = context.getSharedPreferences("USER", MODE_PRIVATE).edit();
         if (value != null) {
-            editor.putString(PREF_KEY_HOME_LATITUDE, doubleToString(value.latitude)).apply();
-            editor.putString(PREF_KEY_HOME_LONGITUDE, doubleToString(value.longitude)).apply();
+            editor.putString(PREF_KEY_HOME_LATITUDE, Utils.doubleToString(value.latitude)).apply();
+            editor.putString(PREF_KEY_HOME_LONGITUDE, Utils.doubleToString(value.longitude)).apply();
         } else {
-            editor.putString(PREF_KEY_HOME_LATITUDE, doubleToString(0.0)).apply();
-            editor.putString(PREF_KEY_HOME_LONGITUDE, doubleToString(0.0)).apply();
+            editor.putString(PREF_KEY_HOME_LATITUDE, Utils.doubleToString(0.0)).apply();
+            editor.putString(PREF_KEY_HOME_LONGITUDE, Utils.doubleToString(0.0)).apply();
         }
     }
 
@@ -201,8 +189,8 @@ public class Prefs {
             double latitude = 0.0;
             double longitude = 0.0;
             try {
-                latitude = stringToDouble(latLngString[0]);
-                longitude = stringToDouble(latLngString[1]);
+                latitude = Utils.stringToDouble(latLngString[0]);
+                longitude = Utils.stringToDouble(latLngString[1]);
             } catch (Exception e) {
                 e.printStackTrace();
             }

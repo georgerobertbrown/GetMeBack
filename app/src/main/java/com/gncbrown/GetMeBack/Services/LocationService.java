@@ -23,7 +23,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
-import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,6 +37,7 @@ public class LocationService extends Service implements
     private static final String TAG = LocationService.class.getSimpleName();
 
     private static Context context;
+    private static Preferences prefs;
 
     private static String[] navigationMethods;
 
@@ -89,7 +90,7 @@ public class LocationService extends Service implements
     }
 
     private void goToDestination() {
-        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
+        LatLng destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Double destinationLatitude = destinationLatLng.latitude;
         Double destinationLongitude = destinationLatLng.longitude;
 
@@ -238,8 +239,8 @@ public class LocationService extends Service implements
         String msg = "Acquired location: " + latitude + ", " + longitude + " (" + location.getAltitude() + ")";
         Log.d(TAG, "onLocationChanged: " + msg);
 
-        Prefs.saveDestinationLocationToPreference(context, new LatLng(latitude, longitude));
-        Prefs.saveDestinationAltitudeToPreference(context, location.getAltitude());
+        prefs.saveToPreferences("DestinationLocation", new LatLng(latitude, longitude));
+        prefs.saveToPreferences("DestinationAltitude", location.getAltitude());
         Utils.getAddressFromLocation(latitude, longitude, getApplicationContext(), locationAddressResultHandler);
 
         Utils.makeNotification(getApplicationContext(), "Acquire Location", msg, ButtonWidgetReceiver.REQ_CODE);
@@ -250,6 +251,8 @@ public class LocationService extends Service implements
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         context = getBaseContext();
+        prefs = new Preferences(context);
+
         int myStartID = startId;
         Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
 
@@ -300,7 +303,7 @@ public class LocationService extends Service implements
         @Override
         public void handleMessage(Message msg) {
             String destinationAddress = msg.getData().getString("address");
-            Prefs.saveDestinationAddressToPreference(context, destinationAddress);
+            prefs.saveToPreferences("DestinationAddress", destinationAddress);
             Log.d(TAG, "addressResultHandler, result=" + destinationAddress);
         }
     };

@@ -16,7 +16,7 @@ import android.os.Looper;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationServices;
 public class LocationForegroundService extends Service {
 
     private static Context context;
+    private static Preferences prefs;
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
@@ -36,6 +37,8 @@ public class LocationForegroundService extends Service {
         super.onCreate();
 
         context = getApplicationContext();
+        prefs = new Preferences(context);
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         startForeground(1, getNotification("Tracking location..."));
@@ -53,7 +56,7 @@ public class LocationForegroundService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     for (Location location : locationResult.getLocations()) {
-                        Prefs.saveLocationOfflineToPreference(context, location);
+                        prefs.saveToPreferences("LocationOffline", location);
                         updateNotification("Tracking: " + location.getLatitude() + ", " + location.getLongitude());
                     }
                 }

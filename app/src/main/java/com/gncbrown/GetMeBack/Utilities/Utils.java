@@ -110,17 +110,20 @@ public class Utils {
         }
     }
 
-    public static LatLng getLocationFromAddress(String strAddress, Context context) {
-        LatLng p1 = null;
+    public static LatLng getLocationFromAddress(Context context, String strAddress) {
+        LatLng p1 = new LatLng(MainActivity.home.latitude, MainActivity.home.longitude);
         try {
             Geocoder coder = new Geocoder(context);
             List<Address> address;
             // May throw an IOException
             address = coder.getFromLocationName(strAddress, 1);
             if (address == null) {
-                return null;
+                return p1;
             }
 
+            if (address == null || address.size() == 0) {
+                return p1;
+            }
             Address location = address.get(0);
             p1 = new LatLng(location.getLatitude(), location.getLongitude() );
         } catch (IOException ex) {
@@ -189,6 +192,18 @@ public class Utils {
         notificationManager.notify(reqCode, notificationBuilder.build()); // 0 is the request code, it should be unique id
 
         Log.d("showNotification", "showNotification: " + reqCode);
+    }
+
+    public static String doubleToString(double value) {
+        return String.format("%f", value);
+    }
+
+    public static double stringToDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            return 0.0;
+        }
     }
 
 }

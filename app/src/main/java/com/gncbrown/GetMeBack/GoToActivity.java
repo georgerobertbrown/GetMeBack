@@ -16,13 +16,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.google.android.gms.maps.model.LatLng;
 
 public class GoToActivity extends AppCompatActivity {
     private static final String TAG = "GoToActivity";
 
     private static Context context;
+    private static Preferences prefs;
 
     private String[] navigationMethods;
 
@@ -34,6 +35,7 @@ public class GoToActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+        prefs = new Preferences(context);
 
         setContentView(R.layout.activity_go_to);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -50,12 +52,12 @@ public class GoToActivity extends AppCompatActivity {
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
 
-        LatLng initialLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
+        LatLng initialLatLng = (LatLng)prefs.retrieveFromPreferences("DestinationLocation");
         Log.d(TAG, "onCreate: initialLatLng=" + initialLatLng);
 
         destinationLatitude = initialLatLng.latitude;
         destinationLongitude = initialLatLng.longitude;
-        destinationAddress = Prefs.retrieveDestinationAddressFromPreference(context);
+        destinationAddress = (String)prefs.retrieveFromPreferences("DestinationAddress");
 
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(GoToActivity.this);
         mBuilder.setTitle("Choose a navigation method to " + destinationAddress);

@@ -1,6 +1,7 @@
 package com.gncbrown.GetMeBack;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -10,7 +11,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.Context;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -19,7 +19,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.gncbrown.GetMeBack.Utilities.Prefs;
+import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationCallback;
@@ -46,6 +46,7 @@ public class PreciseLocationActivity extends AppCompatActivity
     private static final String TAG = "PreciseLocationActivity";
 
     private static Context context;
+    private static Preferences prefs;
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private GoogleMap mMap;
@@ -68,7 +69,9 @@ public class PreciseLocationActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.activity_precise_location);
+        prefs = new Preferences(context);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             EdgeToEdge.enable(this);
@@ -87,7 +90,7 @@ public class PreciseLocationActivity extends AppCompatActivity
         locationTextView.setText("Coordinates: ");
 
         // Initialize the destination LatLng
-        destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context); //new LatLng(34.0522, -118.2437); // Example: Los Angeles
+        destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation"); //new LatLng(34.0522, -118.2437); // Example: Los Angeles
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -103,9 +106,9 @@ public class PreciseLocationActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setBuildingsEnabled(Prefs.retrieveShowBuildingsFromPreference(context));
-        mMap.setTrafficEnabled(Prefs.retrieveShowTrafficFromPreference(context));
-        mMap.setIndoorEnabled(Prefs.retrieveIndoorModeFromPreference(context));
+        mMap.setBuildingsEnabled((boolean)prefs.retrieveFromPreferences("ShowBuildings"));
+        mMap.setTrafficEnabled((boolean)prefs.retrieveFromPreferences("ShowTraffic"));
+        mMap.setIndoorEnabled((boolean)prefs.retrieveFromPreferences("IndoorMode"));
         mMap.setOnCameraIdleListener(this);
 
         // Check for location permission
@@ -127,11 +130,11 @@ public class PreciseLocationActivity extends AppCompatActivity
     }
 
     private void createLocationRequest() {
-        long intervalMillis = Prefs.retrieveGPSRefreshRateMillisFromPreference(context);
-        float minUpdateDistanceMeters = Prefs.retrieveMinUpdateDistanceMetersFromPreference(context); // 1 meters
-        long minUpdateIntervalMillis = Prefs.retrieveMinUpdateIntervalMillisFromPreference(context); // 500 millis
-        long maxUpdateDelayMillis = Prefs.retrieveMaxUpdateDelayMillisFromPreference(context); // 1000 millis
-        LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMillis);
+        int intervalMillis = (int) prefs.retrieveFromPreferences("GPSRefreshRateMillis");
+        float minUpdateDistanceMeters = (float) prefs.retrieveFromPreferences("MinUpdateDistanceMeters"); // 1 meters
+        long minUpdateIntervalMillis = (long) prefs.retrieveFromPreferences("MinUpdateIntervalMillis"); // 500 millis
+        long maxUpdateDelayMillis = (long) prefs.retrieveFromPreferences("MaxUpdateDelayMillis"); // 1000 millis
+        LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, (long)intervalMillis);
         builder.setMinUpdateDistanceMeters(minUpdateDistanceMeters); // Minimum distance change for updates (e.g., 10 meters)
         builder.setMinUpdateIntervalMillis(minUpdateIntervalMillis); // minimum time between consecutive updates
         builder.setMaxUpdateDelayMillis(maxUpdateDelayMillis); // The longest an update may be delayed before it is sent to the client

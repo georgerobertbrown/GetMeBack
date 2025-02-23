@@ -37,7 +37,7 @@ android {
         minSdkVersion 35
         targetSdkVersion 35
         versionCode 4
-        versionName "1.5.1-${currentDatestamp}${currentTimestamp}"
+        versionName "1.5.2-${currentDatestamp}${currentTimestamp}"
 
         multiDexEnabled true
     }
@@ -68,6 +68,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     testImplementation 'junit:junit:4.13.2'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
     implementation 'com.karumi:dexter:5.0.0'

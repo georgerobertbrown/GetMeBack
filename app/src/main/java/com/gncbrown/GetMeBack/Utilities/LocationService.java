@@ -32,6 +32,7 @@ public class LocationService extends Service implements
     private static final String TAG = "LocationService";
 
     private static Context context;
+    private static Preferences prefs;
 
     private static String[] navigationMethods;
 
@@ -86,7 +87,7 @@ public class LocationService extends Service implements
     }
 
     private void goToDestination() {
-        LatLng destinationLatLng = Prefs.retrieveDestinationLocationFromPreference(context);
+        LatLng destinationLatLng = (LatLng)prefs.retrieveFromPreferences("DestinationLocation");
         Log.d(TAG, String.format("destinationLatLng=%s, filteredDestinationLatLng=%s"));
 
         double destinationLatitude = destinationLatLng.latitude;
@@ -238,7 +239,7 @@ public class LocationService extends Service implements
         String msg = "Updated location: " + latitude + "," + longitude;
         Log.d(TAG, "onLocationChanged: " + msg);
 
-        Prefs.saveDestinationLocationToPreference(context, new LatLng(latitude, longitude));
+        prefs.saveToPreferences("DestinationLocation", new LatLng(latitude, longitude));
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
@@ -246,6 +247,8 @@ public class LocationService extends Service implements
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         context = getBaseContext();
+        prefs = new Preferences(context);
+
         int myStartID = startId;
         Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
 
