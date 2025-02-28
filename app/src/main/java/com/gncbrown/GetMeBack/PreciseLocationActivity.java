@@ -55,7 +55,6 @@ public class PreciseLocationActivity extends AppCompatActivity
     private LocationCallback locationCallback;
     private LatLng destinationLatLng;
 
-    private ArrowView arrowView;
     private TextView locationTextView;
     private float zoomLevel;
     private static final int BOUNDS_PADDING = 100;
@@ -85,7 +84,6 @@ public class PreciseLocationActivity extends AppCompatActivity
             });
         }
 
-        arrowView = findViewById(R.id.arrowView);
         locationTextView = findViewById(R.id.locationTextView);
         locationTextView.setText("Coordinates: ");
 
@@ -130,23 +128,20 @@ public class PreciseLocationActivity extends AppCompatActivity
     }
 
     private void createLocationRequest() {
-        int intervalMillis = (int) prefs.retrieveFromPreferences("GPSRefreshRateMillis");
-        float minUpdateDistanceMeters = (float) prefs.retrieveFromPreferences("MinUpdateDistanceMeters"); // 1 meters
-        long minUpdateIntervalMillis = (long) prefs.retrieveFromPreferences("MinUpdateIntervalMillis"); // 500 millis
-        long maxUpdateDelayMillis = (long) prefs.retrieveFromPreferences("MaxUpdateDelayMillis"); // 1000 millis
-        LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, (long)intervalMillis);
+        int gpsRefreshRateMillis = (int) prefs.retrieveFromPreferences("GPSRefreshRateMillis");
+        int minUpdateDistanceMetersAsInteger = (int)prefs.retrieveFromPreferences("MinUpdateDistanceMeters");
+        float minUpdateDistanceMeters = Float.valueOf(minUpdateDistanceMetersAsInteger); // 1 meters
+        int minUpdateIntervalMillisAsInteger = (int) prefs.retrieveFromPreferences("MinUpdateIntervalMillis"); // 500 millis
+        long minUpdateIntervalMillis = Long.valueOf(minUpdateIntervalMillisAsInteger); // 500 millis
+        int maxUpdateDelayMillisAsInteger = (int) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
+        long maxUpdateDelayMillis = Long.valueOf(maxUpdateDelayMillisAsInteger); // 1000 millis
+        LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, (long)gpsRefreshRateMillis);
         builder.setMinUpdateDistanceMeters(minUpdateDistanceMeters); // Minimum distance change for updates (e.g., 10 meters)
         builder.setMinUpdateIntervalMillis(minUpdateIntervalMillis); // minimum time between consecutive updates
         builder.setMaxUpdateDelayMillis(maxUpdateDelayMillis); // The longest an update may be delayed before it is sent to the client
         builder.setGranularity(Granularity.GRANULARITY_FINE); // Fine-grained location updates
         builder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
         locationRequest = builder.build();
-// TODO remove when debugged
-//        locationRequest = LocationRequest.create();
-//        locationRequest.setInterval(intervalMillis); //10000 Update interval in milliseconds (e.g., 10 seconds)
-//        locationRequest.setFastestInterval(5000); // Fastest update interval (e.g., 5 seconds)
-//        locationRequest.setSmallestDisplacement(1); // Minimum distance change for updates (e.g., 10 meters)
-//        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // High accuracy
     }
 
     private void createLocationCallback() {
@@ -159,7 +154,6 @@ public class PreciseLocationActivity extends AppCompatActivity
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
                     updateMapWithLocation(location);
-                    updateArrowDirection(location);
                 }
             }
         };
@@ -208,7 +202,7 @@ public class PreciseLocationActivity extends AppCompatActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                locationTextView.setText(String.format("Coordinates: %s, %s\nDistance: %s)",
+                locationTextView.setText(String.format("Location: %s, %s\nDistance: %s\n",
                         location.getLatitude(), location.getLongitude(), formatDistance(distance)));
             }
         });
@@ -292,15 +286,5 @@ public class PreciseLocationActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         startLocationUpdates();
-    }
-
-    private void updateArrowDirection(Location currentLocation) {
-        Location destinationLocation = new Location("Destination");
-        destinationLocation.setLatitude(destinationLatLng.latitude);
-        destinationLocation.setLongitude(destinationLatLng.longitude);
-
-        float bearing = currentLocation.bearingTo(destinationLocation);
-        //float bearing = destinationLocation.bearingTo(currentLocation);
-        arrowView.setBearing(bearing);
     }
 }

@@ -8,10 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -38,7 +36,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
@@ -90,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements
     private static final int requestCode = 40;
     public static Context context;
     public static Preferences prefs;
-    public static SharedPreferences sharedPreferences;
 
     private static ProgressBar progressBar;
 
@@ -131,11 +127,10 @@ public class MainActivity extends AppCompatActivity implements
     private Double currentLatitude = 0.00;
     private Double currentLongitude = 0.00;
 
-    private long lastMarkerTime = System.currentTimeMillis();;
+    private long lastMarkerTime = System.currentTimeMillis();
 
     public static String moreSubmenuContext = "";
     public static Menu optionsMenu;
-    private static final String OPTION_INFO = "Info";
     private static final String OPTION_HELP = "Help";
     private static final String OPTION_VERSION = "Version";
     private static final String OPTION_WELCOME = "Welcome";
@@ -147,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String OPTION_RELEASE_HISTORY = "Release history";
     private static final String OPTION_NEW = "New...";
     private static final String OPTION_HOME = "Home";
+    private static final String OPTION_QUIT = "Quit";
     private static final String OPTION_SETTINGS = "Settings";
 
     private static Handler addressResultHandler = new Handler() {
@@ -155,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements
             destinationAddress = msg.getData().getString("address");
             prefs.saveToPreferences("DestinationAddress", destinationAddress);
             progress(false);
-            Log.d(TAG, "onLocationChanged: getAddressFromLocation, result=" + destinationAddress);
+            Log.d(TAG, "addressResultHandler: determinedAddress=" + destinationAddress);
         }
     };
 
@@ -393,9 +389,9 @@ public class MainActivity extends AppCompatActivity implements
             showHelp.putExtra("type", "welcome");
             startActivityForResult(showHelp, requestCode);
         } else {
-            if (!Utils.hasPermissions(requiredPermissions, context))
+            if (!Utils.hasPermissions(context, requiredPermissions))
                 requestMultiplePermissions();
-            if (!Utils.hasPermissions(requiredPermissions, context))
+            if (!Utils.hasPermissions(context, requiredPermissions))
                 Toast.makeText(getApplicationContext(), "Permissions not granted by user!", Toast.LENGTH_SHORT).show();
 
             MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST, new OnMapsSdkInitializedCallback() {
@@ -436,9 +432,9 @@ public class MainActivity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == 40) {
 
-            if (!Utils.hasPermissions(requiredPermissions, context))
+            if (!Utils.hasPermissions(context, requiredPermissions))
                 requestMultiplePermissions();
-            if (!Utils.hasPermissions(requiredPermissions, context))
+            if (!Utils.hasPermissions(context, requiredPermissions))
                 Toast.makeText(getApplicationContext(), "Permissions not granted by user!", Toast.LENGTH_SHORT).show();
 
             MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST, new OnMapsSdkInitializedCallback() {
@@ -459,8 +455,6 @@ public class MainActivity extends AppCompatActivity implements
     public void onPause() {
         super.onPause();
         registerReceivers(false);
-        // TODO Should this be here?
-        //prefs.saveToPreferences("DestinationLocation", new LatLng(destinationLatitude, destinationLongitude));
     }
 
     @Override
@@ -491,10 +485,6 @@ public class MainActivity extends AppCompatActivity implements
     public void onDestroy() {
         super.onDestroy();
         registerReceivers(false);
-
-        // TODO should this be here?
-        //LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
-        //prefs.saveToPreferences("DestinationLocation", latLng);
     }
 
     private String getUrl(LatLng origin, LatLng destination, String directionMode) {
@@ -615,8 +605,8 @@ public class MainActivity extends AppCompatActivity implements
 
         } else if (moreSubmenuContext.equals(OPTION_FORGET_LOCATION)) {
             if (!menuTitle.equals(OPTION_HOME))
-                prefs.removeNamedLocationFromPreference(context, menuTitle);
-            //Prefs.removeNamedLocationFromPreference(context, menuTitle); // TODO remove this
+                prefs.removeNamedLocationFromPreferences(menuTitle);
+            moreSubmenuContext = "";
             createOptionsMenu();
 
         } else if (menuTitle.equals(OPTION_SETTINGS)) {
@@ -624,6 +614,8 @@ public class MainActivity extends AppCompatActivity implements
             Intent showSettings = new Intent(getApplicationContext(), SettingsActivity.class);
             showSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(showSettings);
+        } else if (menuTitle.equals(OPTION_QUIT)) {
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
@@ -631,72 +623,25 @@ public class MainActivity extends AppCompatActivity implements
 
     private void createOptionsMenu() {
         Log.d(TAG, "createOptionsMenu");
-        List<NamedLocation> namedLocations = prefs.retrieveNamedLocationsFromPreference(context);
-        //String[] locations = Prefs.retrieveNamedLocations(context);
+        List<NamedLocation> namedLocations = prefs.retrieveNamedLocationsFromPreferences();
         if (optionsMenu != null) {
-            optionsMenu.clear();
+            MenuItem actionRestoreFrom = optionsMenu.findItem(R.id.actionRestoreFrom);
+            SubMenu actionRestoreSubMenu = actionRestoreFrom.getSubMenu();
+            actionRestoreSubMenu.clear();
 
-            Drawable helpIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_help);
-            Drawable versionIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_info_details);
-            Drawable welcomeIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_manage);
-            Drawable valuesIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_view);
-            Drawable historyIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_recent_history);
-            Drawable settingsIcon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_preferences);
+            MenuItem actionSaveLocationTo = optionsMenu.findItem(R.id.actionSaveLocationTo);
+            SubMenu actionSaveLocationSubMenu = actionSaveLocationTo.getSubMenu();
+            actionSaveLocationSubMenu.clear();
+            actionSaveLocationSubMenu.add(OPTION_NEW);
 
-            SubMenu infoMenu = optionsMenu.addSubMenu(1, Menu.FIRST, Menu.NONE, OPTION_INFO);
-            infoMenu.clear();
-            MenuItem settingsItem = infoMenu.add(OPTION_SETTINGS);
-            settingsItem.setIcon(settingsIcon);
-            settingsItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM  | MenuItem.SHOW_AS_ACTION_WITH_TEXT); // always|withText
-            settingsItem.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM  | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-            MenuItem versionItem = infoMenu.add(OPTION_VERSION);
-            versionItem.setIcon(versionIcon);
-            MenuItem welcomeItem = infoMenu.add(OPTION_WELCOME);
-            welcomeItem.setIcon(welcomeIcon);
-            MenuItem helpItem = infoMenu.add(OPTION_HELP);
-            helpItem.setIcon(helpIcon);
-            MenuItem valuesItem = infoMenu.add(OPTION_VALUES);
-            valuesItem.setIcon(valuesIcon);
-            MenuItem historyItem = infoMenu.add(OPTION_RELEASE_HISTORY);
-            historyItem.setIcon(historyIcon);
+            MenuItem actionForgetLocation = optionsMenu.findItem(R.id.actionForgetLocation);
+            SubMenu actionForgetLocationSubMenu = actionForgetLocation.getSubMenu();
+            actionForgetLocationSubMenu.clear();
 
-            // Location submenu
-            SubMenu locationSubMenu = optionsMenu.addSubMenu(2, Menu.FIRST, Menu.NONE, OPTION_LOCATION);
-            locationSubMenu.clear();
-
-            // Restore submenu
-            SubMenu restoreSubMenu = locationSubMenu.addSubMenu(3, Menu.FIRST, Menu.NONE, OPTION_RESTORE_FROM);
-            restoreSubMenu.clear();
-//            restoreSubMenu.add(OPTION_HOME);
             for (NamedLocation namedLocation : namedLocations) {
-                restoreSubMenu.add(namedLocation.getName());
-            }
-//            for (String l : locations) {
-//                restoreSubMenu.add(l);
-//            }
-
-            // Save submenu
-            SubMenu saveSubMenu = locationSubMenu.addSubMenu(4, Menu.FIRST, Menu.NONE, OPTION_SAVE_LOCATION_TO);
-            saveSubMenu.clear();
-            saveSubMenu.add(OPTION_NEW);
-//            saveSubMenu.add(OPTION_HOME);
-            for (NamedLocation namedLocation : namedLocations) {
-                saveSubMenu.add(namedLocation.getName());
-            }
-//            for (String l : locations) {
-//                saveSubMenu.add(l);
-//            }
-
-            // Forget submenu
-            if (!namedLocations.isEmpty()) {//locations.length > 0) {
-                SubMenu forgetSubMenu = locationSubMenu.addSubMenu(2, Menu.FIRST, Menu.NONE, OPTION_FORGET_LOCATION);
-                forgetSubMenu.clear();
-                for (NamedLocation namedLocation : namedLocations) {
-                    forgetSubMenu.add(namedLocation.getName());
-                }
-//                for (String l : locations) {
-//                    forgetSubMenu.add(l);
-//                }
+                actionRestoreSubMenu.add(namedLocation.getName());
+                actionSaveLocationSubMenu.add(namedLocation.getName());
+                actionForgetLocationSubMenu.add(namedLocation.getName());
             }
         }
     }
@@ -779,6 +724,8 @@ public class MainActivity extends AppCompatActivity implements
             animateMap(new LatLng(location.getLatitude(), location.getLongitude()), markerLabel);
 
             if (destinationLatitude != 0.0 && destinationLongitude != 0.0) {
+                Toast.makeText(this,
+                        String.format("Current location %s,%s", currentLatitude, currentLongitude), Toast.LENGTH_SHORT).show();
                 goToDestination();
             } else {
                 Toast.makeText(this, "Current location not set.", Toast.LENGTH_SHORT).show();
@@ -791,6 +738,8 @@ public class MainActivity extends AppCompatActivity implements
 
             LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
             prefs.saveToPreferences("DestinationLocation", latLng);
+            Toast.makeText(this,
+                    String.format("Destination location %s,%s", destinationLatitude, destinationLongitude), Toast.LENGTH_SHORT).show();
 
             animateMap(latLng, markerLabel);
         } else {
@@ -918,7 +867,7 @@ public class MainActivity extends AppCompatActivity implements
                         // check for permanent denial of any permission
                         if (report.isAnyPermissionPermanentlyDenied()) {
                             // show alert dialog navigating to Settings
-                            Utils.openSettingsDialog(MainActivity.this, context);
+                            Utils.openSettingsDialog(context, MainActivity.this);
                         }
                     }
                     @Override
@@ -994,9 +943,7 @@ public class MainActivity extends AppCompatActivity implements
     private void restoreFrom(String name) {
         Toast.makeText(this, "Restoring from " + name, Toast.LENGTH_SHORT).show();
         progress(true);
-        prefs.retrieveNamedLocationsFromPreference(context);
-        LatLng restoredLocation = prefs.retrieveNamedLocationFromPreference(context, name);
-        //LatLng restoredLocation = Prefs.retrieveNamedLocation(context, name); // TODO remove this
+        LatLng restoredLocation = prefs.retrieveNamedLocationFromPreferences(name);
         destinationLatitude = restoredLocation.latitude;
         destinationLongitude = restoredLocation.longitude;
         prefs.saveToPreferences("DestinationLocation", restoredLocation);
@@ -1143,8 +1090,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String mText = input.getText().toString();
-                //prefs.saveToPreferences("NamedLocation", new LatLng(destinationLatitude, destinationLongitude));// TODO remove this
-                prefs.saveNamedLocationToPreferences(context, new NamedLocation(mText, new LatLng(destinationLatitude, destinationLongitude)));
+                prefs.saveNamedLocationToPreferences(new NamedLocation(mText, new LatLng(destinationLatitude, destinationLongitude)));
                 createOptionsMenu();
             }
         });

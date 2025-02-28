@@ -10,14 +10,14 @@
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
 
-    <string name="intervalHint">Sets the desired interval of location updates.</string>
-    <string name="minUpdateIntervalHint">Sets the fastest allowed interval of location updates.
+    <string name="gpsRefreshRateMillisHint">Sets the desired interval (in milliseconds) of location updates. 1 second = 1000 milliseconds.</string>
+    <string name="minUpdateIntervalHint">Sets the fastest allowed interval (in milliseconds) of location updates.
 
         Location updates may arrive faster than the desired interval (setIntervalMillis(long)), but will never arrive faster than specified here.</string>
-    <string name="minUpdateDistanceHint">Sets the minimum distance required between consecutive location updates.
+    <string name="minUpdateDistanceHint">Sets the minimum distance (in meters) required between consecutive location updates.
 
         If a derived location update is not at least the specified distance away from the previous location update delivered to the client, it will not be delivered. This may also allow additional power savings under some circumstances.</string>
-    <string name="maxUpdateDelayHint">Sets the longest a location update may be delayed.
+    <string name="maxUpdateDelayHint">Sets the longest a location update may be delayed (in milliseconds).
 
         This parameter controls location batching behavior. If this is set to a value at least 2x larger than the interval specified by setIntervalMillis(long), then a device may (but is not required to) save power by delivering locations in batches.
 

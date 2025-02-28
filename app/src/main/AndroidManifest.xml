@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gncbrown.GetMeBack" >
+    package="com.gncbrown.GetMeBack">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -15,14 +15,29 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/appName"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+        <service
+            android:name=".Services.WatchListenerService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <!-- deprecated
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+                -->
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <action android:name="com.google.android.gms.wearable.CAPABILITY_CHANGED" />
+                <data android:scheme="wear" android:host="*" />
+            </intent-filter>
+        </service>
+
         <activity
-            android:name="com.gncbrown.GetMeBack.GoToActivity"
+            android:name=".GoToActivity"
             android:exported="false" />
         <activity
-            android:name="com.gncbrown.GetMeBack.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,24 +45,24 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.gncbrown.GetMeBack.PreciseLocationActivity"
+            android:name=".PreciseLocationActivity"
             android:exported="false"
-            android:theme="@style/AppTheme"
-            android:label="@string/preciseLocationName" />
+            android:label="@string/preciseLocationName"
+            android:theme="@style/AppTheme" />
         <activity
-            android:name="com.gncbrown.GetMeBack.HelpActivity"
-            android:theme="@style/AppTheme"
-            android:exported="false" />
-        <activity
-            android:name="com.gncbrown.GetMeBack.SettingsActivity"
+            android:name=".HelpActivity"
             android:exported="false"
-            android:theme="@style/AppTheme"
-            android:label="@string/settingsName" />
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settingsName"
+            android:theme="@style/AppTheme" />
 
         <receiver
-            android:name="com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver"
+            android:name=".Utilities.ButtonWidgetReceiver"
             android:exported="true"
-            android:label="GetMeBack" >
+            android:label="GetMeBack">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.gncbrown.GetMeBack.ACTION_WIDGET_UPDATE_FROM_ACTIVITY" />
@@ -59,12 +74,12 @@
         </receiver>
 
         <service
-            android:name="com.gncbrown.GetMeBack.Services.LocationService"
+            android:name=".Services.LocationService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location" />
         <service
-            android:name="com.gncbrown.GetMeBack.Services.LocationForegroundService"
+            android:name=".Services.LocationForegroundService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location" />

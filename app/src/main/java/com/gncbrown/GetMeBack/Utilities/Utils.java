@@ -61,7 +61,7 @@ public class Utils {
         dialog.show();
     }
 
-    public static boolean hasPermissions(String[] permissions, Context context) {
+    public static boolean hasPermissions(Context context, String[] permissions) {
         for (String permission : permissions) {
             int permissionCheck = ContextCompat.checkSelfPermission(context, permission);
             if (permissionCheck != PackageManager.PERMISSION_GRANTED)
@@ -73,7 +73,7 @@ public class Utils {
 
     public static void getAddressFromLocation(final Double latitude, final Double longitude,
                                               final Context context, final Handler handler) {
-        Log.e(TAG, String.format("getAddressFromLocation: %s, %s", latitude, longitude));
+        Log.d(TAG, String.format("getAddressFromLocation: %s, %s", latitude, longitude));
         if (latitude != 0.0f && longitude != 0.0f) {
             Thread thread = new Thread() {
                 @Override
@@ -133,7 +133,7 @@ public class Utils {
         return p1;
     }
 
-    public static void openSettingsDialog(Activity activity, Context context) {
+    public static void openSettingsDialog(Context context, Activity activity) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Required Permissions");
         builder.setMessage("This app requires location permissions. Grant them in app settings.");
@@ -204,6 +204,15 @@ public class Utils {
         } catch (Exception e) {
             return 0.0;
         }
+    }
+
+    public static String capitalize(String str) {
+        if (str == null || str.length() == 0) {
+            return str;
+        } else if (str.length() == 1) {
+            return str.toUpperCase();
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
 }

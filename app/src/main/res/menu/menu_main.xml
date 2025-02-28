@@ -4,33 +4,118 @@
     tools:context="com.gncbrown.GetMeBack.MainActivity">
 
     <item
-        android:id="@+id/actionWelcome"
+        android:id="@+id/actionSettings"
+        android:icon="@android:drawable/ic_menu_preferences"
         android:orderInCategory="100"
-        android:title="Welcome"
-        app:showAsAction="never" />
+        android:title="Settings"
+        app:showAsAction="always|withText" />
+
     <item
-        android:id="@+id/actionAbout"
+        android:id="@+id/actionQuit"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
         android:orderInCategory="100"
-        android:title="Help"
-        app:showAsAction="never" />
+        android:title="Quit"
+        app:showAsAction="always|withText" />
+
     <item
-        android:id="@+id/actionReleases"
+        android:id="@+id/actionInfo"
         android:orderInCategory="100"
-        android:title="Release history"
-        app:showAsAction="never" />
+        android:title="Info"
+        app:showAsAction="never">
+
+        <menu>
+            <item
+                android:id="@+id/actionVersion"
+                android:icon="@android:drawable/ic_menu_info_details"
+                android:orderInCategory="100"
+                android:title="Version"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/actionWelcome"
+                android:icon="@android:drawable/ic_menu_manage"
+                android:orderInCategory="100"
+                android:title="Welcome"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/actionHelp"
+                android:icon="@android:drawable/ic_menu_help"
+                android:orderInCategory="100"
+                android:title="Help"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/actionValues"
+                android:icon="@android:drawable/ic_menu_view"
+                android:orderInCategory="100"
+                android:title="Values"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/actionReleases"
+                android:icon="@android:drawable/ic_menu_recent_history"
+                android:orderInCategory="100"
+                android:title="Release history"
+                app:showAsAction="never" />
+
+        </menu>
+    </item>
+
     <item
-        android:id="@+id/actionSetHome"
+        android:id="@+id/actionLocation"
         android:orderInCategory="100"
-        android:title="Set home"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/actionRestoreHome"
-        android:orderInCategory="100"
-        android:title="Restore home"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/actionValues"
-        android:orderInCategory="100"
-        android:title="Values"
-        app:showAsAction="never" />
+        android:title="Location"
+        app:showAsAction="never">
+
+        <menu>
+            <item
+                android:id="@+id/actionRestoreFrom"
+                android:orderInCategory="100"
+                android:title="Restore from"
+                app:showAsAction="never">
+                <menu>
+                    <item
+                        android:id="@+id/actionNew"
+                        android:orderInCategory="100"
+                        android:title="New..."
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/actionRestoreFromHome"
+                        android:orderInCategory="100"
+                        android:title="Home"
+                        app:showAsAction="never" />
+                </menu>
+            </item>
+            <item
+                android:id="@+id/actionSaveLocationTo"
+                android:orderInCategory="100"
+                android:title="Save location to"
+                app:showAsAction="never">
+                <menu>
+                    <item
+                        android:id="@+id/actionSaveLocationToNew"
+                        android:orderInCategory="100"
+                        android:title="New..."
+                        app:showAsAction="never" />
+                    <item
+                        android:id="@+id/actionSaveLocationToHome"
+                        android:orderInCategory="100"
+                        android:title="Home"
+                        app:showAsAction="never" />
+                </menu>
+            </item>
+            <item
+                android:id="@+id/actionForgetLocation"
+                android:orderInCategory="100"
+                android:title="Forget location"
+                app:showAsAction="never">
+                <menu>
+                    <item
+                        android:id="@+id/actionForgetLocationHome"
+                        android:orderInCategory="100"
+                        android:title="Home"
+                        app:showAsAction="never" />
+                </menu>
+            </item>
+
+        </menu>
+    </item>
+
 </menu>

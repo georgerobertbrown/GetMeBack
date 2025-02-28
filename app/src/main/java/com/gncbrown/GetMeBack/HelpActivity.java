@@ -60,6 +60,7 @@ public class HelpActivity extends AppCompatActivity {
         }
 //		Log.d(TAG, "help type=" + helpType);
         setContentView(R.layout.activity_help);
+        setTitle(context.getString(R.string.appName) + " " + Utils.capitalize(helpType));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             EdgeToEdge.enable(this);
             Window window = getWindow();
@@ -80,7 +81,7 @@ public class HelpActivity extends AppCompatActivity {
         requestPermission.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (helpType.equals("welcome")) {
-                    if (!Utils.hasPermissions(MainActivity.requiredPermissions, context))
+                    if (!Utils.hasPermissions(context, MainActivity.requiredPermissions))
                         ActivityCompat.requestPermissions(HelpActivity.this, MainActivity.requiredPermissions, permissionsCode);
                     else
                         Toast.makeText(getApplicationContext(), "Permissions already granted.", Toast.LENGTH_SHORT).show();
@@ -91,7 +92,7 @@ public class HelpActivity extends AppCompatActivity {
         });
         if (!(boolean)prefs.retrieveFromPreferences("DebugMode") && (
                 //!helpType.equals("welcome") ||
-            Utils.hasPermissions(MainActivity.requiredPermissions, context)))
+            Utils.hasPermissions(context, MainActivity.requiredPermissions)))
             requestPermission.setVisibility(View.GONE);
 
         String releaseNotes = "";
@@ -105,7 +106,7 @@ public class HelpActivity extends AppCompatActivity {
                 String message = getIntent().getStringExtra("message");
                 releaseNotes = title + "\n\n" + message;
             } else if (helpType.equals("changeLog")) {
-                releaseNotes = "<h1>Change Log</h1><br/><br/>";
+                releaseNotes = "";
                 List<String> assets = Arrays.asList(getAssets().list(""));
                 Collections.sort(assets, Collections.reverseOrder());
                 for (String asset : assets) {

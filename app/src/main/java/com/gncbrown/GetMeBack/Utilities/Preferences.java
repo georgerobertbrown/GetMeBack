@@ -43,10 +43,10 @@ public class Preferences {
         preferences.put("FirstTime", new Entry("FirstTime", DataType.BOOLEAN, true));
 
         preferences.put("GPSRefreshRateMillis", new Entry("GPSRefreshRateMillis", DataType.INTEGER, 1000));
-        preferences.put("MinUpdateIntervalMillis", new Entry("MinUpdateIntervalMillis", DataType.LONG, 1000L));
+        preferences.put("MinUpdateIntervalMillis", new Entry("MinUpdateIntervalMillis", DataType.INTEGER, 1000));
+        preferences.put("MinUpdateDistanceMeters", new Entry("MinUpdateDistanceMeters", DataType.INTEGER, 10));
+        preferences.put("MaxUpdateDelayMillis", new Entry("MaxUpdateDelayMillis", DataType.INTEGER, 1000));
 
-        preferences.put("MinUpdateDistanceMeters", new Entry("MinUpdateDistanceMeters", DataType.FLOAT, 10.0f));
-        preferences.put("MaxUpdateDelayMillis", new Entry("MaxUpdateDelayMillis", DataType.LONG, 1000L));
         preferences.put("ShowBuildings", new Entry("ShowBuildings", DataType.BOOLEAN, true));
         preferences.put("ShowTraffic", new Entry("ShowTraffic", DataType.BOOLEAN, true));
         preferences.put("IndoorMode", new Entry("IndoorMode", DataType.BOOLEAN, false));
@@ -280,7 +280,7 @@ public class Preferences {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString(key, valueString).apply();
     }
 
-    public List<NamedLocation> retrieveNamedLocationsFromPreference(Context context) {
+    public List<NamedLocation> retrieveNamedLocationsFromPreferences() {
         List<NamedLocation> defaultNamedLocations = new ArrayList<NamedLocation>();
         NamedLocation defaultNamedLocation = new NamedLocation("Home", new LatLng(43.056854, -75.252122));
         defaultNamedLocations.add(defaultNamedLocation);
@@ -288,16 +288,31 @@ public class Preferences {
         String jsonString = gson.toJson(defaultNamedLocations);
 
         String locationsString = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_KEY_NAMED_LOCATIONS, jsonString);
-        return getList(locationsString, NamedLocation.class);
+        List<NamedLocation> namedLocations = getList(locationsString, NamedLocation.class);
+        if (namedLocations == null) {
+            namedLocations = new ArrayList<NamedLocation>();
+        }
+        boolean foundHome = false;
+        for (NamedLocation namedLocation : namedLocations) {
+            if (namedLocation.getName().equals("Home")) {
+                foundHome = true;
+                break;
+            }
+        }
+        if (!foundHome) {
+            namedLocations.add(defaultNamedLocation);
+            saveNamedLocationToPreferences(defaultNamedLocation.getName(), defaultNamedLocation.getLatLng());
+        }
+        return namedLocations;
     }
 
-    public void saveNamedLocationToPreferences(Context context, NamedLocation value) {
-        saveNamedLocationToPreference(context, value.getName(), value.getLatLng());
+    public void saveNamedLocationToPreferences(NamedLocation value) {
+        saveNamedLocationToPreferences(value.getName(), value.getLatLng());
     }
 
-    public LatLng retrieveNamedLocationFromPreference(Context context, String name) {
+    public LatLng retrieveNamedLocationFromPreferences(String name) {
         try {
-            List<NamedLocation> namedLocations = retrieveNamedLocationsFromPreference(context);
+            List<NamedLocation> namedLocations = retrieveNamedLocationsFromPreferences();
             if (namedLocations == null) {
                 namedLocations = new ArrayList<NamedLocation>();
             }
@@ -313,9 +328,9 @@ public class Preferences {
         return new LatLng(MainActivity.home.latitude, MainActivity.home.longitude);
     }
 
-    public void removeNamedLocationFromPreference(Context context, String name) {
+    public void removeNamedLocationFromPreferences(String name) {
         try {
-            List<NamedLocation> namedLocations = retrieveNamedLocationsFromPreference(context);
+            List<NamedLocation> namedLocations = retrieveNamedLocationsFromPreferences();
             if (namedLocations == null) {
                 namedLocations = new ArrayList<NamedLocation>();
             }
@@ -337,7 +352,7 @@ public class Preferences {
         }
     }
 
-    public static void saveNamedLocationToPreference(Context context, String name, LatLng value) {
+    public static void saveNamedLocationToPreferences(String name, LatLng value) {
         try {
             String locationsString = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PREF_KEY_NAMED_LOCATIONS, "");
             List<NamedLocation> namedLocations = getList(locationsString, NamedLocation.class);
