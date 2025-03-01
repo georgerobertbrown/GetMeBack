@@ -51,6 +51,8 @@ public class Preferences {
         preferences.put("ShowTraffic", new Entry("ShowTraffic", DataType.BOOLEAN, true));
         preferences.put("IndoorMode", new Entry("IndoorMode", DataType.BOOLEAN, false));
         preferences.put("DebugMode", new Entry("DebugMode", DataType.BOOLEAN, false));
+
+        preferences.put("KillAfterMinutes", new Entry("KillAfterMinutes", DataType.INTEGER, 5));
     }
 
     public enum DataType {
@@ -144,6 +146,7 @@ public class Preferences {
     public void saveToPreferences(String key, Object value) {
         Object e = preferences.get(key);
         if (e == null) {
+            Log.e(TAG, "Key not found: " + key);
             return;
         }
         Entry entry = (Entry) e;
@@ -260,6 +263,8 @@ public class Preferences {
     }
 
     public void saveLatLngToPreferences(String key, LatLng value) {
+        if (value == null)
+            return;
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString(key,
                 doubleToString(value.latitude) + "," + doubleToString(value.longitude)).apply();
     }

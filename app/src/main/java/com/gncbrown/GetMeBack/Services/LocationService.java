@@ -34,7 +34,7 @@ import com.google.android.gms.maps.model.LatLng;
 public class LocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
-    private static final String TAG = LocationService.class.getSimpleName();
+    private static final String TAG = "LocationService";
 
     private static Context context;
     private static Preferences prefs;
@@ -206,6 +206,7 @@ public class LocationService extends Service implements
 
     @Override
     public void onConnected(Bundle bundle) {
+        Log.d(TAG, "onConnected");
         startLocationUpdates(true);
 
         LoadActivity activityLoader = new LoadActivity();

@@ -36,6 +36,8 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView minUpdateIntervalTextView;
     private SeekBar maxUpdateDelaySeekBar;
     private TextView maxUpdateDelayTextView;
+    private TextView killAfterTextView;
+    private SeekBar killAfterSeekBar;
 
     private int numberOfIncrements = (10000 - 100) / 100;
 
@@ -54,21 +56,21 @@ public class SettingsActivity extends AppCompatActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
                 int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-                v.setPadding(0, topInset+200, 0, 0);
+                v.setPadding(0, topInset+100, 0, 0);
                 return WindowInsetsCompat.CONSUMED;
             });
         }
 
         gpsRefreshRateMillisTextView = findViewById(R.id.gpsRefreshRateMillisTextView);
         int currentGpsRefreshRateMillis = (int)(prefs.retrieveFromPreferences("GPSRefreshRateMillis"));
+        updateSeekbarTextView(gpsRefreshRateMillisTextView, "GPS update interval: ", currentGpsRefreshRateMillis, "ms");
         gpsRefreshRateMillisSeekBar = findViewById(R.id.gpsRefreshRateMillisSeekBar);
         gpsRefreshRateMillisSeekBar.setProgress((int)(currentGpsRefreshRateMillis/100));
-        updateGpsRefreshRateMillisTextView(currentGpsRefreshRateMillis);
         gpsRefreshRateMillisSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int milliseconds = 100 + (progress * 100);
-                updateGpsRefreshRateMillisTextView(milliseconds); // Convert back to milliseconds
+                updateSeekbarTextView(gpsRefreshRateMillisTextView, "GPS update interval: ", milliseconds, "ms");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -90,12 +92,12 @@ public class SettingsActivity extends AppCompatActivity {
         minUpdateIntervalSeekBar = findViewById(R.id.minUpdateIntervalSeekBar);
         int minUpdateInterval = (int) prefs.retrieveFromPreferences("MinUpdateIntervalMillis");
         minUpdateIntervalSeekBar.setProgress((int)(minUpdateInterval/100));
-        updateMinUpdateIntervalTextView(minUpdateInterval);
+        updateSeekbarTextView(minUpdateIntervalTextView, "Min update interval: ", minUpdateInterval, "ms");
         minUpdateIntervalSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int milliseconds = 100 + (progress * 100);
-                updateMinUpdateIntervalTextView(milliseconds); // Convert back to milliseconds
+                updateSeekbarTextView(minUpdateIntervalTextView, "Min update interval: ", milliseconds, "ms");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -117,11 +119,11 @@ public class SettingsActivity extends AppCompatActivity {
         minUpdateDistanceSeekBar = findViewById(R.id.minUpdateDistanceSeekBar);
         int minUpdateDistance = (int) prefs.retrieveFromPreferences("MinUpdateDistanceMeters");
         minUpdateDistanceSeekBar.setProgress((int)(minUpdateDistance));
-        updateMinUpdateDistanceTextView(minUpdateDistance);
+        updateSeekbarTextView(minUpdateDistanceTextView, "Min update distance: ", minUpdateDistance, "m");
         minUpdateDistanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                updateMinUpdateDistanceTextView(progress);
+                updateSeekbarTextView(minUpdateDistanceTextView, "Min update distance: ", progress, "m");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -143,12 +145,12 @@ public class SettingsActivity extends AppCompatActivity {
         maxUpdateDelaySeekBar = findViewById(R.id.maxUpdateDelaySeekBar);
         int maxUpdateDelay = (int) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
         maxUpdateDelaySeekBar.setProgress((int)(maxUpdateDelay/100));
-        updateMaxUpdateDelayTextView(maxUpdateDelay);
+        updateSeekbarTextView(maxUpdateDelayTextView, "Min update delay: ", maxUpdateDelay, "millis");
         maxUpdateDelaySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int milliseconds = 100 + (progress * 100);
-                updateMaxUpdateDelayTextView(milliseconds); // Convert back to milliseconds
+                updateSeekbarTextView(maxUpdateDelayTextView, "Min update delay: ", milliseconds, "millis");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -165,6 +167,33 @@ public class SettingsActivity extends AppCompatActivity {
         maxUpdateDelaylImageButton.setOnClickListener(v -> {
             showPopup(v, context.getResources().getString(R.string.maxUpdateDelayHint));
         });
+
+        killAfterTextView = findViewById(R.id.killAfterTextView);
+        killAfterSeekBar = findViewById(R.id.killAfterSeekBar);
+        int killAfterMinutes = (int) prefs.retrieveFromPreferences("KillAfterMinutes");
+        killAfterSeekBar.setProgress((int)(killAfterMinutes));
+        updateSeekbarTextView(killAfterTextView, "Kill precise navigation after: ", killAfterMinutes, "minutes");
+        killAfterSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateSeekbarTextView(killAfterTextView, "Kill precise navigation after: ", progress, "minutes");
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Not needed
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int value = seekBar.getProgress(); // Convert back to milliseconds
+                prefs.saveToPreferences("KillAfterMinutes", value);
+            }
+        });
+        killAfterSeekBar.setMax(60);
+        ImageButton killAfterImageButton = (ImageButton)findViewById(R.id.killAfterImageButton);
+        killAfterImageButton.setOnClickListener(v -> {
+            showPopup(v, context.getResources().getString(R.string.killAfterHint));
+        });
+
 
         CheckBox buildingsCheckBox = findViewById(R.id.buildingsCheckBox);
         buildingsCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowBuildings"));
@@ -204,17 +233,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void updateGpsRefreshRateMillisTextView(int value) {
-        gpsRefreshRateMillisTextView.setText("GPS update interval: " + value + "ms");
-    }
-    private void updateMinUpdateIntervalTextView(int value) {
-        minUpdateIntervalTextView.setText("Min update interval: " + value + "ms");
-    }
-    private void updateMaxUpdateDelayTextView(int value) {
-        maxUpdateDelayTextView.setText("Max update delay: " + value + "ms");
-    }
-    private void updateMinUpdateDistanceTextView(int value) {
-        minUpdateDistanceTextView.setText("Min update distance: " + value + "m");
+    private void updateSeekbarTextView(TextView textView, String textPrefix, int value, String units) {
+        textView.setText(textPrefix + value + units);
     }
 
     private void showPopup(View clickedView, String hint) {

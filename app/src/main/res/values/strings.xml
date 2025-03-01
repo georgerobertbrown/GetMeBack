@@ -28,6 +28,7 @@
     <string name="showTrafficHint">Turns the traffic layer on or off.</string>
     <string name="indoorModeHint">Sets whether indoor maps should be enabled.</string>
     <string name="debugModeHint">Enable debug mode to get more verbose logging.</string>
+    <string name="killAfterHint">Stop precise navigation after this many minutes. Protects against battery drain.</string>
 
     <string-array name="navigationMethods">
         <item>Driving</item>

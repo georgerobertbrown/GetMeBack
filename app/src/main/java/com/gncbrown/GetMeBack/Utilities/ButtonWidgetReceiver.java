@@ -14,6 +14,7 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.gncbrown.GetMeBack.GoToActivity;
 import com.gncbrown.GetMeBack.MainActivity;
@@ -216,8 +217,12 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 			launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startActivity(launchIntent);
 		} else if (requestMethod.equals("Broadcast")) {
-			Intent locationIntent = new Intent(ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
-			context.sendBroadcast(locationIntent);
+			LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
+			Intent broadcastIntent = new Intent(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
+			broadcastIntent.putExtra("ACTION", ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
+			broadcastIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			boolean result = bManager.sendBroadcast(broadcastIntent);
+			Log.d(TAG, "requestLocationUpdate: sendBroadcast=" + result);
 		} else {
 			setLocation(context);
 		}

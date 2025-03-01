@@ -39,6 +39,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.gncbrown.GetMeBack.Utilities.BackgroundTask;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
@@ -145,6 +146,9 @@ public class MainActivity extends AppCompatActivity implements
     private static final String OPTION_QUIT = "Quit";
     private static final String OPTION_SETTINGS = "Settings";
 
+    private LocalBroadcastManager bManager;
+    public static final String ACTION_UPDATE_DESTINATION_FROM_WATCH = "com.gncbrown.GetMeBack.ACTION_UPDATE_DESTINATION_FROM_WATCH";
+
     private static Handler addressResultHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -221,6 +225,29 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
+    private BroadcastReceiver updateDestinationFromWatchReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "updateDestinationFromWatchReceiver.onReceive");
+            String action = intent.getAction();
+            String location = intent.getStringExtra("location");
+            Double latitude = intent.getDoubleExtra("latitude", 0.0);
+            Double longitude = intent.getDoubleExtra("longitude", 0.0);
+            Log.d(TAG, "updateDestinationFromWatchReceiver: latitude=" + latitude + ", longitude=" + longitude);
+
+            if (latitude != 0.0 && longitude != 0.0) {
+                destinationLatitude = latitude;
+                destinationLongitude = longitude;
+                mGoogleMap.clear();
+                mGoogleMap.addMarker(new MarkerOptions()
+                        .position(home)
+                        .title("Destination")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), ZOOM));
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -244,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements
 
         context = this;
         prefs = new Preferences(context);
+        bManager = LocalBroadcastManager.getInstance(this);
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
 
@@ -345,9 +373,14 @@ public class MainActivity extends AppCompatActivity implements
                     Utils.showAlertDialog(context,
                             "Error", "Destination location not set");
                 } else {
+                    int killAfter = (int) prefs.retrieveFromPreferences("KillAfterMinutes");
+                    String msg = killAfter == 0 ?
+                            "This uses precise location, which may drain the battery. Continue?" :
+                            String.format("This uses precise location, and will be stopped after %d minutes. Continue?",
+                            killAfter);
                     final AlertDialog.Builder batteryDialog = new AlertDialog.Builder(MainActivity.this);
                     batteryDialog.setTitle("Return to marked location")
-                            .setMessage("This uses precise location, which may drain the battery. Continue?")
+                            .setMessage(msg)
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface paramDialogInterface, int paramInt) {
@@ -1029,21 +1062,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void registerReceivers(boolean flag) {
-        Log.d("TAG", String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s+%s", flag, alreadyRegistered,
+        Log.d("TAG", String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s+%s+%s", flag, alreadyRegistered,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET,
-                ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET));
+                ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET,
+                MainActivity.ACTION_UPDATE_DESTINATION_FROM_WATCH));
         if (flag) {
             if (!alreadyRegistered) {
                 try {
-                    registerReceiver(updateDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET),
-                            Context.RECEIVER_EXPORTED);
-                    registerReceiver(gotoDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET),
-                            Context.RECEIVER_EXPORTED);
-                    registerReceiver(preciseGoToDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET),
-                            Context.RECEIVER_EXPORTED);
+                    bManager.registerReceiver(updateDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET));
+                    bManager.registerReceiver(gotoDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET));
+                    bManager.registerReceiver(preciseGoToDestinationReceiver, new IntentFilter(ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET));
+                    bManager.registerReceiver(updateDestinationFromWatchReceiver, new IntentFilter(MainActivity.ACTION_UPDATE_DESTINATION_FROM_WATCH));
                 } catch (Exception e) {
-                    Log.e(TAG, "Could not register receivers");
+                    Log.e(TAG, "Could not register receivers, e=" + e.getMessage());
                 }
             } else {
                 Log.i(TAG, "Receivers already registered");
@@ -1052,11 +1084,12 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             if (alreadyRegistered) {
                 try {
-                    unregisterReceiver(updateDestinationReceiver);
-                    unregisterReceiver(gotoDestinationReceiver);
-                    unregisterReceiver(preciseGoToDestinationReceiver);
+                    bManager.unregisterReceiver(updateDestinationReceiver);
+                    bManager.unregisterReceiver(gotoDestinationReceiver);
+                    bManager.unregisterReceiver(preciseGoToDestinationReceiver);
+                    bManager.unregisterReceiver(updateDestinationFromWatchReceiver);
                 } catch (Exception e) {
-                    Log.e(TAG, "Could not unregister receivers");
+                    Log.e(TAG, "Could not unregister receivers, e=" + e.getMessage());
                 }
             } else {
                 Log.i(TAG, "Receivers already unregistered");

@@ -1,19 +1,26 @@
 package com.gncbrown.GetMeBack;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
@@ -40,6 +47,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class PreciseLocationActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnCameraIdleListener {
 
@@ -58,17 +68,53 @@ public class PreciseLocationActivity extends AppCompatActivity
     private TextView locationTextView;
     private float zoomLevel;
     private static final int BOUNDS_PADDING = 100;
+
     private static BitmapDescriptor destinationMarker =
             BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-            //BitmapDescriptorFactory.fromResource(R.drawable.pushpin_red_nobackground);
+    //BitmapDescriptorFactory.fromResource(R.drawable.pushpin_red_nobackground);
     private static BitmapDescriptor currentMarker =
             BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+
+
+    public void handleUncaughtException(Thread thread, Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString(); // stack trace as a string
+        String pStackTrace = sStackTrace.replaceAll("\n\t", "\n...");
+        Log.e(TAG, "Unhandled exception: " + e.getMessage() + ", stack trace:\n"
+                + pStackTrace);
+
+        System.exit(1); // kill off the crashed app
+    }
+
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable closeActivityRunnable = new Runnable() {
+        @Override
+        public void run() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showKillAlertDialog(context, "Battery Saver", "Closing navigation to save battery.");
+                }
+            });
+        }
+    };
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+
+        // Setup handler for uncaught exceptions.
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable e) {
+                handleUncaughtException(thread, e);
+            }
+        });
+
         setContentView(R.layout.activity_precise_location);
         prefs = new Preferences(context);
 
@@ -85,7 +131,12 @@ public class PreciseLocationActivity extends AppCompatActivity
         }
 
         locationTextView = findViewById(R.id.locationTextView);
-        locationTextView.setText("Coordinates: ");
+        locationTextView.setText("No location yet");
+
+        ImageButton buttonExitPreciseMap = findViewById(R.id.buttonExitPreciseMap);
+        buttonExitPreciseMap.setOnClickListener(v -> {
+            finish();
+        });
 
         // Initialize the destination LatLng
         destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation"); //new LatLng(34.0522, -118.2437); // Example: Los Angeles
@@ -99,6 +150,11 @@ public class PreciseLocationActivity extends AppCompatActivity
 
         createLocationRequest();
         createLocationCallback();
+
+        // Schedule the activity to close after 5 minutes (300,000 milliseconds)
+        int killAfterMinutes = (int) prefs.retrieveFromPreferences("KillAfterMinutes");
+        if (killAfterMinutes > 0)
+            handler.postDelayed(closeActivityRunnable, killAfterMinutes*60*1000);
     }
 
     @Override
@@ -286,5 +342,26 @@ public class PreciseLocationActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         startLocationUpdates();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacks(closeActivityRunnable);
+    }
+
+    private void showKillAlertDialog(Context context, String title, String message) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                finish();
+            }
+        });
+        dialogBuilder.setMessage(message);
+        dialogBuilder.setTitle(title);
+        dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+        Dialog dialog = dialogBuilder.create();
+        dialog.show();
     }
 }
