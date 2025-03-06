@@ -27,13 +27,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.gncbrown.GetMeBack.Utilities.Preferences;
+import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -82,8 +81,10 @@ public class PreciseLocationActivity extends AppCompatActivity
         e.printStackTrace(pw);
         String sStackTrace = sw.toString(); // stack trace as a string
         String pStackTrace = sStackTrace.replaceAll("\n\t", "\n...");
-        Log.e(TAG, "Unhandled exception: " + e.getMessage() + ", stack trace:\n"
-                + pStackTrace);
+        String msg = "Unhandled exception: " + e.getMessage() + ", stack trace:\n"
+                + pStackTrace;
+        Log.e(TAG, msg);
+        prefs.saveToPreferences("StackTrace", msg);
 
         System.exit(1); // kill off the crashed app
     }
@@ -148,7 +149,7 @@ public class PreciseLocationActivity extends AppCompatActivity
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        createLocationRequest();
+        locationRequest = Utils.createLocationRequest(context);
         createLocationCallback();
 
         // Schedule the activity to close after 5 minutes (300,000 milliseconds)
@@ -181,23 +182,6 @@ public class PreciseLocationActivity extends AppCompatActivity
             CameraPosition cameraPosition = mMap.getCameraPosition();
             zoomLevel = cameraPosition.zoom;
         }
-    }
-
-    private void createLocationRequest() {
-        int gpsRefreshRateMillis = (int) prefs.retrieveFromPreferences("GPSRefreshRateMillis");
-        int minUpdateDistanceMetersAsInteger = (int)prefs.retrieveFromPreferences("MinUpdateDistanceMeters");
-        float minUpdateDistanceMeters = Float.valueOf(minUpdateDistanceMetersAsInteger); // 1 meters
-        int minUpdateIntervalMillisAsInteger = (int) prefs.retrieveFromPreferences("MinUpdateIntervalMillis"); // 500 millis
-        long minUpdateIntervalMillis = Long.valueOf(minUpdateIntervalMillisAsInteger); // 500 millis
-        int maxUpdateDelayMillisAsInteger = (int) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
-        long maxUpdateDelayMillis = Long.valueOf(maxUpdateDelayMillisAsInteger); // 1000 millis
-        LocationRequest.Builder builder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, (long)gpsRefreshRateMillis);
-        builder.setMinUpdateDistanceMeters(minUpdateDistanceMeters); // Minimum distance change for updates (e.g., 10 meters)
-        builder.setMinUpdateIntervalMillis(minUpdateIntervalMillis); // minimum time between consecutive updates
-        builder.setMaxUpdateDelayMillis(maxUpdateDelayMillis); // The longest an update may be delayed before it is sent to the client
-        builder.setGranularity(Granularity.GRANULARITY_FINE); // Fine-grained location updates
-        builder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
-        locationRequest = builder.build();
     }
 
     private void createLocationCallback() {

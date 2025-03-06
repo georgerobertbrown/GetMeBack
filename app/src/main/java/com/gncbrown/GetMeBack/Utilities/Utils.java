@@ -29,6 +29,9 @@ import androidx.core.content.ContextCompat;
 
 import com.gncbrown.GetMeBack.MainActivity;
 import com.gncbrown.GetMeBack.R;
+import com.google.android.gms.location.Granularity;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
@@ -36,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
 
 public class Utils {
     private static final String TAG = "Utils";
@@ -213,6 +217,28 @@ public class Utils {
             return str.toUpperCase();
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    public static LocationRequest createLocationRequest(Context context) {
+        Preferences prefs = new Preferences(context);
+        int gpsRefreshRateMillis = (int) prefs.retrieveFromPreferences("GPSRefreshRateMillis");
+        int minUpdateDistanceMetersAsInteger = (int)prefs.retrieveFromPreferences("MinUpdateDistanceMeters");
+        float minUpdateDistanceMeters = Float.valueOf(minUpdateDistanceMetersAsInteger); // 1 meters
+        int minUpdateIntervalMillisAsInteger = (int) prefs.retrieveFromPreferences("MinUpdateIntervalMillis"); // 500 millis
+        long minUpdateIntervalMillis = Long.valueOf(minUpdateIntervalMillisAsInteger); // 500 millis
+        int maxUpdateDelayMillisAsInteger = (int) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
+        long maxUpdateDelayMillis = Long.valueOf(maxUpdateDelayMillisAsInteger); // 1000 millis
+        Log.d(TAG, String.format("startLocationUpdates; gpsRefreshRateMillis=%s, minUpdateIntervalMillis=%s, minUpdateDistanceMeters=%s, maxUpdateDelayMillisAsInteger=%s",
+                gpsRefreshRateMillis, minUpdateIntervalMillis, minUpdateDistanceMeters, maxUpdateDelayMillisAsInteger));
+
+        LocationRequest.Builder locationRequestBuilder = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, (long)gpsRefreshRateMillis);
+        locationRequestBuilder.setMinUpdateDistanceMeters(minUpdateDistanceMeters); // Minimum distance change for updates (e.g., 10 meters)
+        locationRequestBuilder.setMinUpdateIntervalMillis(minUpdateIntervalMillis); // minimum time between consecutive updates
+        locationRequestBuilder.setMaxUpdateDelayMillis(maxUpdateDelayMillis); // The longest an update may be delayed before it is sent to the client
+        locationRequestBuilder.setGranularity(Granularity.GRANULARITY_FINE); // Fine-grained location updates
+        locationRequestBuilder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
+        locationRequestBuilder.setWaitForAccurateLocation(false);
+        return locationRequestBuilder.build();
     }
 
 }

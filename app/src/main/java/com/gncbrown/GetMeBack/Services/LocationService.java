@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,8 +28,14 @@ import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Granularity;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.model.LatLng;
 
 public class LocationService extends Service implements
@@ -45,8 +52,10 @@ public class LocationService extends Service implements
     private Location mLocation;
     private LocationManager mLocationManager;
     private LocationRequest mLocationRequest;
-    private long UPDATE_INTERVAL = 2 * 1000;  /* 10 secs */
-    private long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private boolean useLocationBuilder = true;
+
+    private FusedLocationProviderClient fuzedLocationClient;
+    private LocationCallback locationCallback;
 
     public LocationService() {
         Log.d(TAG, "onStart:LocationService");
@@ -145,25 +154,35 @@ public class LocationService extends Service implements
         if (start) {
             //progress(true);
             // Create the location request
-            mLocationRequest = LocationRequest.create()
-                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                    .setInterval(UPDATE_INTERVAL)
-                    .setNumUpdates(1)
-                    .setFastestInterval(FASTEST_INTERVAL);
 
-            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                        mLocationRequest, this);
-            } else {
-                Log.d(TAG, "GoogleAPIClient not connected yet!");
-                Toast.makeText(getApplicationContext(), "GoogleAPIClient not connected yet!", Toast.LENGTH_SHORT).show();
-            }
+            fuzedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            LocationRequest locationRequest = Utils.createLocationRequest(getApplicationContext());
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(@NonNull LocationResult locationResult) {
+                    super.onLocationResult(locationResult);
+                    if (locationResult == null) return;
+                    for (Location location : locationResult.getLocations()) {
+                        onLocationChanged(location);
+                    }
+                }
+
+                @Override
+                public void onLocationAvailability(@NonNull LocationAvailability locationAvailability) {
+                    super.onLocationAvailability(locationAvailability);
+                }
+            };
+            fuzedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
             Log.d("reque", "--->>>>");
         } else {
             //progress(false);
+            if (fuzedLocationClient != null)
+                fuzedLocationClient.removeLocationUpdates(locationCallback);
+            fuzedLocationClient = null;
             if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient = null;
             Log.d("deque", "<<<<---");
         }
     }
@@ -251,33 +270,12 @@ public class LocationService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
         context = getBaseContext();
         prefs = new Preferences(context);
 
-        int myStartID = startId;
-        Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
-
-
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
-
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    mGoogleApiClient.blockingConnect();
-                }
-            });
-
-            //mGoogleApiClient.connect();
-        }
-        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
+        fuzedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (intent.hasExtra("action")) {
             String action = intent.getStringExtra("action");

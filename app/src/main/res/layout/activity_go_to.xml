@@ -5,7 +5,6 @@
     android:id="@+id/topView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GoToActivity"
-    android:background="@drawable/icon">
+    tools:context=".GoToActivity">
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -53,7 +53,6 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
@@ -99,8 +98,6 @@ public class MainActivity extends AppCompatActivity implements
     private Location mLocation;
     private LocationManager mLocationManager;
     private LocationRequest mLocationRequest;
-    private long UPDATE_INTERVAL = 2 * 1000;  /* 10 secs */
-    private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
 
     private Polyline currentPolyline;
@@ -290,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements
         fabLayer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Switch map layer", Toast.LENGTH_SHORT).show();
+                toastMessage("Switch map layer");
 
                 mapFragment.getMapAsync(new OnMapReadyCallback() {
                     @Override
@@ -314,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements
         fabLayer.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(getApplicationContext(), "Action: Map layers", Toast.LENGTH_SHORT).show();
+                toastMessage("Action: Map layers");
                 return true;
             }
         });
@@ -323,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements
         fabMark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Mark location", Toast.LENGTH_SHORT).show();
+                toastMessage("Mark location");
                 locationSource = LocationSource.DestinationLocation;
 
                 runOnUiThread(new Runnable() {
@@ -338,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements
         fabMark.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(getApplicationContext(), "Action: Mark current location", Toast.LENGTH_SHORT).show();
+                toastMessage("Action: Mark current location");
                 return true;
             }
         });
@@ -351,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements
                     Utils.showAlertDialog(context,
                             "Error", "Destination location not set");
                 } else {
-                    Toast.makeText(getApplicationContext(), "Return to mark", Toast.LENGTH_SHORT).show();
+                    toastMessage("Return to mark");
                     goToDestination();
                     progressBar.setVisibility(View.GONE);
                 }
@@ -360,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements
         fabGo.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(getApplicationContext(), "Action: use turn-by-turn directions to mark", Toast.LENGTH_SHORT).show();
+                toastMessage("Action: use turn-by-turn directions to mark");
                 return true;
             }
         });
@@ -400,7 +397,7 @@ public class MainActivity extends AppCompatActivity implements
         fabPreciseLocation.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(getApplicationContext(), "Action: use precise location to mark", Toast.LENGTH_SHORT).show();
+                toastMessage("Action: use precise location to mark");
                 return true;
             }
         });
@@ -425,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements
             if (!Utils.hasPermissions(context, requiredPermissions))
                 requestMultiplePermissions();
             if (!Utils.hasPermissions(context, requiredPermissions))
-                Toast.makeText(getApplicationContext(), "Permissions not granted by user!", Toast.LENGTH_SHORT).show();
+                toastMessage("Permissions not granted by user!");
 
             MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST, new OnMapsSdkInitializedCallback() {
                 @Override
@@ -458,6 +455,9 @@ public class MainActivity extends AppCompatActivity implements
             requestLocationUpdate(true);
 
         prefs.saveToPreferences("FirstTime", false);
+
+        String crash = (String)prefs.retrieveFromPreferences("StackTrace");
+        Log.d(TAG, "onCreate: last crash=" + crash);
     }
 
     @Override
@@ -468,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements
             if (!Utils.hasPermissions(context, requiredPermissions))
                 requestMultiplePermissions();
             if (!Utils.hasPermissions(context, requiredPermissions))
-                Toast.makeText(getApplicationContext(), "Permissions not granted by user!", Toast.LENGTH_SHORT).show();
+                toastMessage("Permissions not granted by user!");
 
             MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST, new OnMapsSdkInitializedCallback() {
                 @Override
@@ -746,7 +746,7 @@ public class MainActivity extends AppCompatActivity implements
         destinationLongitude = location.getLongitude();
         String msg = "Updated location: " + destinationLatitude + "," + destinationLongitude;
         Log.d(TAG, "onLocationChanged: " + msg);
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        toastMessage(msg);
         progress(false);
 
         String markerLabel = "";
@@ -757,11 +757,10 @@ public class MainActivity extends AppCompatActivity implements
             animateMap(new LatLng(location.getLatitude(), location.getLongitude()), markerLabel);
 
             if (destinationLatitude != 0.0 && destinationLongitude != 0.0) {
-                Toast.makeText(this,
-                        String.format("Current location %s,%s", currentLatitude, currentLongitude), Toast.LENGTH_SHORT).show();
+                toastMessage(String.format("Current location %s,%s", currentLatitude, currentLongitude));
                 goToDestination();
             } else {
-                Toast.makeText(this, "Current location not set.", Toast.LENGTH_SHORT).show();
+                toastMessage("Current location not set.");
             }
         } else if (locationSource == LocationSource.DestinationLocation) {
             destinationLatitude = location.getLatitude();
@@ -771,8 +770,7 @@ public class MainActivity extends AppCompatActivity implements
 
             LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
             prefs.saveToPreferences("DestinationLocation", latLng);
-            Toast.makeText(this,
-                    String.format("Destination location %s,%s", destinationLatitude, destinationLongitude), Toast.LENGTH_SHORT).show();
+            toastMessage(String.format("Destination location %s,%s", destinationLatitude, destinationLongitude));
 
             animateMap(latLng, markerLabel);
         } else {
@@ -843,12 +841,7 @@ public class MainActivity extends AppCompatActivity implements
 
         if (start) {
             progress(true);
-            LocationRequest mLocationRequest = LocationRequest.create();
-            mLocationRequest.setInterval(UPDATE_INTERVAL);
-            mLocationRequest.setNumUpdates(1);
-            mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-            mLocationRequest.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setSmallestDisplacement(1); // Minimum movement required (in meters)
+            LocationRequest mLocationRequest = Utils.createLocationRequest(context);
             LocationCallback mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -895,7 +888,7 @@ public class MainActivity extends AppCompatActivity implements
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         // check if all permissions are granted
                         if (report.areAllPermissionsGranted()) {
-                            Toast.makeText(getApplicationContext(), "All permissions are granted by user!", Toast.LENGTH_SHORT).show();
+                            toastMessage("All permissions are granted by user!");
                         }
                         // check for permanent denial of any permission
                         if (report.isAnyPermissionPermanentlyDenied()) {
@@ -911,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements
                 withErrorListener(new PermissionRequestErrorListener() {
                     @Override
                     public void onError(DexterError error) {
-                        Toast.makeText(getApplicationContext(), "DexterError: " + error.toString(), Toast.LENGTH_SHORT).show();
+                        toastMessage("DexterError: " + error.toString());
                     }
                 })
                 .onSameThread()
@@ -962,7 +955,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void restoreHome() {
-        Toast.makeText(this, "Restoring from Home", Toast.LENGTH_SHORT).show();
+        toastMessage("Restoring from Home");
         progress(true);
         LatLng homeLocation = (LatLng) prefs.retrieveFromPreferences("HomeLocation");
         String homeAddress = (String) prefs.retrieveFromPreferences("HomeAddress");
@@ -974,7 +967,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void restoreFrom(String name) {
-        Toast.makeText(this, "Restoring from " + name, Toast.LENGTH_SHORT).show();
+        toastMessage("Restoring from " + name);
         progress(true);
         LatLng restoredLocation = prefs.retrieveNamedLocationFromPreferences(name);
         destinationLatitude = restoredLocation.latitude;
@@ -1062,7 +1055,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void registerReceivers(boolean flag) {
-        Log.d("TAG", String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s+%s+%s", flag, alreadyRegistered,
+        Log.d(TAG, String.format("registerReceiver[flag=%s, alreadyRegistered=%s] for %s+%s+%s+%s", flag, alreadyRegistered,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_GO_TO_FROM_WIDGET,
                 ButtonWidgetReceiver.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET,

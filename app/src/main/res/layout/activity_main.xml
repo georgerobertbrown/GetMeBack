@@ -35,6 +35,7 @@
         android:tint="@color/grey_80"
         android:tooltipText="Map layers"
         app:backgroundTint="@color/grey_20"
+        app:maxImageSize="48dp"
         android:src="@android:drawable/ic_menu_mapmode" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -47,6 +48,7 @@
         android:src="@android:drawable/ic_menu_directions"
         android:tint="@color/grey_80"
         android:tooltipText="Use turn-by-turn directions to mark"
+        app:maxImageSize="48dp"
         app:backgroundTint="@color/grey_20" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -59,6 +61,7 @@
         android:src="@android:drawable/ic_menu_compass"
         android:tooltipText="Use precise location to mark"
         android:tint="@color/grey_80"
+        app:maxImageSize="48dp"
         app:backgroundTint="@color/grey_20" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -71,6 +74,7 @@
         android:src="@android:drawable/ic_menu_mylocation"
         android:tooltipText="Mark location"
         android:tint="@color/grey_80"
+        app:maxImageSize="48dp"
         app:backgroundTint="@color/grey_20" />
 
     <ProgressBar

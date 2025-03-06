@@ -53,6 +53,8 @@ public class Preferences {
         preferences.put("DebugMode", new Entry("DebugMode", DataType.BOOLEAN, false));
 
         preferences.put("KillAfterMinutes", new Entry("KillAfterMinutes", DataType.INTEGER, 5));
+
+        preferences.put("StackTrace", new Entry("StackTrace", DataType.STRING, ""));
     }
 
     public enum DataType {
