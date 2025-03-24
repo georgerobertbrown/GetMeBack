@@ -13,10 +13,9 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class Preferences {
     private static final String TAG = "Preferences";
@@ -24,37 +23,39 @@ public class Preferences {
     private static final String PREFS_NAME = "MyPrefs";
     private static  Context context;
 
-    private static final Map<String, Entry> preferences = new HashMap<>();
+    private static final List<Entry>preferencesMap = new LinkedList<>();
 
     private static final String PREF_KEY_NAMED_LOCATIONS = "namedLocations";
 
 
     public Preferences(Context context) {
         this.context = context;
-        preferences.put("LocationOffline", new Entry("LocationOffline", DataType.LATLNG, new LatLng(37.4219983, -122.084)));
-        preferences.put("DestinationAltitude", new Entry("DestinationAltitude", DataType.DOUBLE, 0.0));
-        preferences.put("DestinationLocation", new Entry("DestinationLocation", DataType.LATLNG, new LatLng(37.4219983, -122.084)));
-        preferences.put("DestinationAddress", new Entry("DestinationAddress", DataType.STRING, "1650 Amphitheatre Pkwy, Mountain View, CA, 94043"));
+        preferencesMap.clear();
+        preferencesMap.add(new Entry("LocationOffline", DataType.LATLNG, new LatLng(37.4219983, -122.084)));
+        preferencesMap.add(new Entry("DestinationAltitude", DataType.DOUBLE, 0.0));
+        preferencesMap.add(new Entry("DestinationLocation", DataType.LATLNG, new LatLng(37.4219983, -122.084)));
+        preferencesMap.add(new Entry("DestinationAddress", DataType.STRING, "1650 Amphitheatre Pkwy, Mountain View, CA, 94043"));
 
-        preferences.put("HomeLocation", new Entry("HomeLocation", DataType.LATLNG, new LatLng(43.056854, -75.252122)));
-        preferences.put("HomeAddress", new Entry("HomeAddress", DataType.STRING, "4 Frederick Drive, New Hartford, NY 13413"));
+        preferencesMap.add(new Entry("HomeLocation", DataType.LATLNG, new LatLng(43.056854, -75.252122)));
+        preferencesMap.add(new Entry("HomeAddress", DataType.STRING, "4 Frederick Drive, New Hartford, NY 13413"));
 
-        preferences.put("NamedLocation", new Entry("NamedLocation", DataType.LATLNG, new LatLng(0.0, 0.0)));
-        preferences.put("FirstTime", new Entry("FirstTime", DataType.BOOLEAN, true));
+        preferencesMap.add(new Entry("NamedLocation", DataType.LATLNG, new LatLng(0.0, 0.0)));
+        preferencesMap.add(new Entry("NavigationMode", DataType.STRING, "Use precise navigation"));
 
-        preferences.put("GPSRefreshRateMillis", new Entry("GPSRefreshRateMillis", DataType.INTEGER, 1000));
-        preferences.put("MinUpdateIntervalMillis", new Entry("MinUpdateIntervalMillis", DataType.INTEGER, 1000));
-        preferences.put("MinUpdateDistanceMeters", new Entry("MinUpdateDistanceMeters", DataType.INTEGER, 10));
-        preferences.put("MaxUpdateDelayMillis", new Entry("MaxUpdateDelayMillis", DataType.INTEGER, 1000));
+        preferencesMap.add(new Entry("GPSRefreshRateMillis", DataType.INTEGER, 1000));
+        preferencesMap.add(new Entry("MinUpdateIntervalMillis", DataType.INTEGER, 1000));
+        preferencesMap.add(new Entry("MinUpdateDistanceMeters", DataType.INTEGER, 10));
+        preferencesMap.add(new Entry("MaxUpdateDelayMillis", DataType.INTEGER, 1000));
 
-        preferences.put("ShowBuildings", new Entry("ShowBuildings", DataType.BOOLEAN, true));
-        preferences.put("ShowTraffic", new Entry("ShowTraffic", DataType.BOOLEAN, true));
-        preferences.put("IndoorMode", new Entry("IndoorMode", DataType.BOOLEAN, false));
-        preferences.put("DebugMode", new Entry("DebugMode", DataType.BOOLEAN, false));
+        preferencesMap.add(new Entry("KillAfterMinutes", DataType.INTEGER, 5));
 
-        preferences.put("KillAfterMinutes", new Entry("KillAfterMinutes", DataType.INTEGER, 5));
-
-        preferences.put("StackTrace", new Entry("StackTrace", DataType.STRING, ""));
+        preferencesMap.add(new Entry("ShowBuildings", DataType.BOOLEAN, true));
+        preferencesMap.add(new Entry("ShowTraffic", DataType.BOOLEAN, true));
+        preferencesMap.add(new Entry("IndoorMode", DataType.BOOLEAN, false));
+        preferencesMap.add(new Entry("FirstTime", DataType.BOOLEAN, true));
+        preferencesMap.add(new Entry("DebugMode", DataType.BOOLEAN, false));
+        preferencesMap.add(new Entry("ToneOnLocationUpdate", DataType.BOOLEAN, false));
+        preferencesMap.add(new Entry("StackTrace", DataType.STRING, ""));
     }
 
     public enum DataType {
@@ -120,7 +121,7 @@ public class Preferences {
     }
 
     public Object retrieveFromPreferences(String key) {
-        Object e = preferences.get(key);
+        Object e = getEntryFor(key);
         if (e == null) {
             return null;
         }
@@ -146,7 +147,7 @@ public class Preferences {
     }
 
     public void saveToPreferences(String key, Object value) {
-        Object e = preferences.get(key);
+        Object e = getEntryFor(key);
         if (e == null) {
             Log.e(TAG, "Key not found: " + key);
             return;
@@ -179,7 +180,7 @@ public class Preferences {
 
     public String retrieveStringToPreferences(String key) {
         try {
-            String defaultValue = (String)preferences.get(key).defaultValue;
+            String defaultValue = (String)getEntryFor(key).defaultValue;
             return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(key, defaultValue);
         } catch (Exception e) {
             e.printStackTrace();
@@ -193,7 +194,7 @@ public class Preferences {
 
     public boolean retrieveBooleanFromPreferences(String key) {
         try {
-            Boolean defaultValue = (Boolean)preferences.get(key).defaultValue;
+            Boolean defaultValue = (Boolean)getEntryFor(key).defaultValue;
             return context.getSharedPreferences(PREFS_NAME, Context
                     .MODE_PRIVATE).getBoolean(key, defaultValue);
         } catch (Exception e) {
@@ -208,7 +209,7 @@ public class Preferences {
 
     public float retrieveFloatFromPreferences(String key) {
         try {
-            Float defaultValue = (Float)preferences.get(key).defaultValue;
+            Float defaultValue = (Float)getEntryFor(key).defaultValue;
             return context.getSharedPreferences(PREFS_NAME, Context
                     .MODE_PRIVATE).getFloat(key, defaultValue);
         } catch (Exception e) {
@@ -223,7 +224,7 @@ public class Preferences {
 
     public long retrieveLongFromPreferences(String key) {
         try {
-            long defaultValue = (long)preferences.get(key).defaultValue;
+            long defaultValue = (long)getEntryFor(key).defaultValue;
             return context.getSharedPreferences(PREFS_NAME, Context
                     .MODE_PRIVATE).getLong(key, defaultValue);
         } catch (Exception e) {
@@ -238,7 +239,7 @@ public class Preferences {
 
     public int retrieveIntegerFromPreferences(String key) {
         try {
-            int defaultValue = (int)preferences.get(key).defaultValue;
+            int defaultValue = (int)getEntryFor(key).defaultValue;
             return context.getSharedPreferences(PREFS_NAME, Context
                     .MODE_PRIVATE).getInt(key, defaultValue);
         } catch (Exception e) {
@@ -253,7 +254,7 @@ public class Preferences {
 
     public LatLng retrieveLatLngFromPreferences(String key) {
         try {
-            LatLng defaultValue = (LatLng)preferences.get(key).defaultValue;
+            LatLng defaultValue = (LatLng)getEntryFor(key).defaultValue;
             String defaultValueString = doubleToString(defaultValue.latitude) + "," + doubleToString(defaultValue.longitude);
             String value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(key, defaultValueString);
             String[] latLngString = value.split(",");
@@ -272,7 +273,7 @@ public class Preferences {
     }
 
     public double retrieveDoubleFromPreferences(String key) {
-        double defaultValue = (Double)preferences.get(key).defaultValue;
+        double defaultValue = (Double)getEntryFor(key).defaultValue;
         try {
             return stringToDouble(context.getSharedPreferences(PREFS_NAME, Context
                     .MODE_PRIVATE).getString(key, doubleToString(defaultValue)));
@@ -394,5 +395,48 @@ public class Preferences {
     public static <T> T getFromJson(String json, Class<T> clazz) {
         Type typeOfT = TypeToken.get(clazz).getType();
         return new Gson().fromJson(json, typeOfT);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Entry entry : preferencesMap) {
+            sb.append(entry.toString()).append(": ")
+                    .append(" = ")
+                    .append(retrieveFromPreferences(entry.keyName))
+                    .append("\n");
+        }
+        return sb.toString();
+    }
+
+    public Entry getEntryFor(String key) {
+        for (Entry entry : preferencesMap) {
+            if (entry.keyName.equals(key)) {
+                return entry;
+            }
+        }
+        Log.e(TAG, "Key not found: " + key);
+        return null;
+    }
+
+    public void resetPreferences() {
+        for (Entry entry : preferencesMap) {
+            if (entry.keyType == DataType.LATLNG)
+                saveLatLngToPreferences(entry.keyName, (LatLng) entry.defaultValue);
+            else if (entry.keyType == DataType.DOUBLE)
+                saveDoubleToPreferences(entry.keyName, (Double) entry.defaultValue);
+            else if (entry.keyType == DataType.FLOAT)
+                saveFloatToPreferences(entry.keyName, (Float) entry.defaultValue);
+            else if (entry.keyType == DataType.LONG)
+                saveLongToPreferences(entry.keyName, (Long) entry.defaultValue);
+            else if (entry.keyType == DataType.INTEGER)
+                saveIntegerToPreferences(entry.keyName, (Integer) entry.defaultValue);
+            else if (entry.keyType == DataType.BOOLEAN)
+                saveBooleanToPreferences(entry.keyName, (Boolean) entry.defaultValue);
+            else if (entry.keyType == DataType.STRING)
+                saveStringToPreferences(entry.keyName, (String) entry.defaultValue);
+            else
+                Log.e(TAG, "Unknown data type: " + entry.keyType);
+        }
     }
 }

@@ -36,6 +36,8 @@ public class WatchListenerService extends WearableListenerService {
                 Intent broadcastIntent = new Intent(MainActivity.ACTION_UPDATE_DESTINATION_FROM_WATCH);
                 broadcastIntent.putExtra("latitude", Double.parseDouble(l[0]));
                 broadcastIntent.putExtra("longitude", Double.parseDouble(l[1]));
+                prefs.saveLatLngToPreferences("DestinationLocation",
+                        new LatLng(Double.parseDouble(l[0]), Double.parseDouble(l[1])));
                 boolean result = bManager.sendBroadcast(broadcastIntent);
                 Log.d(TAG, "WatchListenerService.onMessageReceived: sendBroadcast=" + result);
             } catch (NumberFormatException e) {

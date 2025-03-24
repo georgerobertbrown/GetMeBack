@@ -25,6 +25,7 @@ public class GoToActivity extends AppCompatActivity {
     private static Context context;
     private static Preferences prefs;
 
+    private String selectedNavigationMethod = "d";
     private String[] navigationMethods;
 
     private static Double destinationLatitude = 0.00;
@@ -50,6 +51,7 @@ public class GoToActivity extends AppCompatActivity {
             });
         }
 
+        selectedNavigationMethod = "";
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
 
         LatLng initialLatLng = (LatLng)prefs.retrieveFromPreferences("DestinationLocation");
@@ -59,26 +61,49 @@ public class GoToActivity extends AppCompatActivity {
         destinationLongitude = initialLatLng.longitude;
         destinationAddress = (String)prefs.retrieveFromPreferences("DestinationAddress");
 
-        AlertDialog.Builder mBuilder = new AlertDialog.Builder(GoToActivity.this);
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(context); //GoToActivity.this);
         mBuilder.setTitle("Choose a navigation method to " + destinationAddress);
+        mBuilder.setCancelable(true);
+        mBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "navigationMethod.onClick: OK, which="+which);
+                if (selectedNavigationMethod != null & !selectedNavigationMethod.isEmpty()) {
+                    launchMaps(selectedNavigationMethod);
+                    finish();
+                } else if (which >= 0 && which < navigationMethods.length) {
+                    selectedNavigationMethod = navigationMethods[which].toLowerCase().substring(0, 1);
+                    launchMaps(selectedNavigationMethod);
+                    finish();
+                }
+            }
+        });
+        mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "navigationMethod.onClick: Cancel");
+                finish();
+            }
+        });
         mBuilder.setSingleChoiceItems(navigationMethods, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0,1);
-                // Launch maps intent
-                Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
-                        selectedNavigationMethod));
-                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                mapIntent.setPackage("com.google.android.apps.maps");
-                Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
-                startActivity(mapIntent);
-
-                dialogInterface.dismiss();
-                finish();
+                Log.d(TAG, "navigationMethod.onClick: i=" + i);
+                selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0,1);
             }
         });
 
         AlertDialog mDialog = mBuilder.create();
         mDialog.show();
     }
+
+    private void launchMaps(String navigationMethod) {
+        Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
+                navigationMethod));
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
+        startActivity(mapIntent);
+    }
+
 }

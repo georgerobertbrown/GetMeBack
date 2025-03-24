@@ -213,13 +213,13 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 				"Service";
 		if (requestMethod.equals("MainActivity")) { // TODO remove after testing
 			Intent launchIntent = new Intent(context, MainActivity.class);
-			launchIntent.putExtra("ACTION", ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
+			launchIntent.putExtra("LaunchedFrom", ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
 			launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startActivity(launchIntent);
 		} else if (requestMethod.equals("Broadcast")) {
 			LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
 			Intent broadcastIntent = new Intent(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
-			broadcastIntent.putExtra("ACTION", ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
+			broadcastIntent.putExtra("LaunchedFrom", ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
 			broadcastIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			boolean result = bManager.sendBroadcast(broadcastIntent);
 			Log.d(TAG, "requestLocationUpdate: sendBroadcast=" + result);
@@ -231,7 +231,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 	private void setLocation(Context context) {
 		Log.d(TAG, "setLocation " + ACTION_ACTIVITY_UPDATE_FROM_WIDGET);
 		Intent locationIntent = new Intent(context, LocationService.class);
-		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_GET_LOCATION));
+		locationIntent.putExtra("LocationAction", context.getResources().getString(R.string.ACTION_GET_LOCATION));
 		try {
 			//context.startForegroundService(locationIntent);
 			ContextCompat.startForegroundService(context, locationIntent);
@@ -255,7 +255,7 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		Log.d(TAG, "goToLocation " + ACTION_ACTIVITY_GO_TO_FROM_WIDGET);
 
 		Intent launchIntent = new Intent(context, GoToActivity.class);
-		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(launchIntent);
 	}
 
@@ -263,14 +263,14 @@ public class ButtonWidgetReceiver extends AppWidgetProvider {
 		Log.d(TAG, "preciseGoToLocation " + ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET);
 
 		Intent launchIntent = new Intent(context, PreciseLocationActivity.class);
-		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(launchIntent);
 	}
 
 	private void launchApp(Context context) {
 		Log.d(TAG, "launchApp " + ACTION_ACTIVITY_LAUNCH_FROM_WIDGET);
 		Intent locationIntent = new Intent(context, LocationService.class);
-		locationIntent.putExtra("action", context.getResources().getString(R.string.ACTION_LAUNCH));
+		locationIntent.putExtra("LocationAction", context.getResources().getString(R.string.ACTION_LAUNCH));
 		try {
 			context.startService(locationIntent);
 		} catch (Exception e) {

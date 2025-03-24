@@ -1,0 +1,9 @@
+1. Improved Preferences with values output and ordered list
+2. Close button consistency
+3. Added toneOnLocationUpdate
+4. Now display all values based on preferencesMap
+5. LocationService updates, including foreground notification service
+6. Catch uncaught exceptions
+7. Display altitude
+8. Settings reset
+9. Better popup menu placement

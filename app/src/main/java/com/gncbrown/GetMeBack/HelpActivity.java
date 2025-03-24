@@ -68,12 +68,13 @@ public class HelpActivity extends AppCompatActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
                 int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-                v.setPadding(0, topInset+200, 0, 0);
+                v.setPadding(0, topInset+50, 0, 0);
                 return WindowInsetsCompat.CONSUMED;
             });
         }
 
         TextView helpText = findViewById(R.id.helpText);
+        helpText.setTextColor(getResources().getColor(R.color.black));
         Context context = helpText.getContext();
 
 
@@ -129,6 +130,8 @@ public class HelpActivity extends AppCompatActivity {
                                 + new String(buffer) + "<br/><br/>";
                     }
                 }
+            } else if (helpType.equals("values")) {
+                releaseNotes = prefs.toString().replaceAll("\n", "<br/>\n");
             } else {
                 String helpFileName = "help_text.html";
                 if (helpType.equals("welcome"))

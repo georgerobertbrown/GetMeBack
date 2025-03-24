@@ -5,6 +5,15 @@ Inspiration: Cindy Brown
 
 <h2>Tips and suggestions</h2>
 <h3>General</h3>
+The main action buttons are located in the bottom right of the screen. Long-press on a button for a pop-up description of the button action.
+
+General application buttons are located across the top:
+<ul>
+    <li>Tap the Settings icon <img src="settings.png"> to update various application settings, e.g. GPS update interval, minimum update distance and interval.</li>
+    <li>Tap the Close icon <img src="close.png"> to close the application.</li>
+    <li>Tap the More icon <img src="more.png"> to show a menu for additional capabilities.</li>
+</ul>
+
 When dealing with Android's location service, getting the current location or the address from the location can take some time. You may notice a delay in acquisition until the operation is complete.
 
 <h3>Getting location</h3>
@@ -78,3 +87,11 @@ Various settings are available under the <i>Settings</i> menu. They are grouped 
         <br>Currently, indoor maps can only be shown on one map at a time and by default, this is the first map added to your application.
         <br>To enable indoor maps on another map, you must first disable indoor maps on the original map. If you try to enable indoor maps when it is enabled on another map, nothing will happen and this will return false. When Indoor is not enabled for a map, all methods related to indoor will return null, or false.</li>
 </ul>
+
+<h3>Miscellaneous Settings</h3>
+<ul>
+    <li><i>Kill precise navigation after</i>: Kills the precise navigation after the specified time. This preserves battery in the case you left precise navigation running.</li>
+    <li><i>Tone on location update</i>: Plays a tone on GPS hits. A debugging tool to let you know that your are receiving GPS updates.</li>
+    <li><i>Debug mode</i>: Enable/disable additional debugging information</li>
+</ul>
+<i>RESET SETTINGS</i> button: resets settings to their default.

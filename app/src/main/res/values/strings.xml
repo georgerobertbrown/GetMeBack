@@ -1,6 +1,6 @@
 <!DOCTYPE resources [
     <!ENTITY appname "GetMeBack!">
-    <!ENTITY version "1.5.3">
+    <!ENTITY version "1.5.4">
     ]>
 
 <resources>
@@ -9,6 +9,7 @@
     <string name="settingsName">&appname; Settings</string>
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
+    <string name="helpTitle">Help</string>
 
     <string name="gpsRefreshRateMillisHint">Sets the desired interval (in milliseconds) of location updates. 1 second = 1000 milliseconds.</string>
     <string name="minUpdateIntervalHint">Sets the fastest allowed interval (in milliseconds) of location updates.
@@ -29,6 +30,7 @@
     <string name="indoorModeHint">Sets whether indoor maps should be enabled.</string>
     <string name="debugModeHint">Enable debug mode to get more verbose logging.</string>
     <string name="killAfterHint">Stop precise navigation after this many minutes. Protects against battery drain.</string>
+    <string name="toneOnLocationUpdateHint">Play tone on GPS update. Provides feedback on getting GPS hits.</string>
 
     <string-array name="navigationMethods">
         <item>Driving</item>

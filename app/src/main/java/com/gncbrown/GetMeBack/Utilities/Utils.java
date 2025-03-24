@@ -1,6 +1,8 @@
 package com.gncbrown.GetMeBack.Utilities;
 
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static androidx.core.app.ActivityCompat.startActivityForResult;
+import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -13,8 +15,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +28,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -35,6 +46,8 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +56,8 @@ import java.util.Locale;
 
 public class Utils {
     private static final String TAG = "Utils";
+
+    public static String packageURI = "android.resource://com.gncbrown.GetMeBackWatch";
 
     public static String getVersion() {
         return "Version " + com.gncbrown.GetMeBack.BuildConfig.VERSION_NAME
@@ -91,9 +106,12 @@ public class Utils {
                             Address address = list.get(0);
                             // sending back first address line and locality
                             result = address.getAddressLine(0) + ", " + address.getLocality();
+                        } else {
+                            result = String.format("Empty address returned for: %s, %s", latitude, longitude);
                         }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Impossible to connect to Geocoder", e);
+                    } catch (IOException e) {
+                        result = String.format("No address found for: %s, %s; e=%s", latitude, longitude, e.getMessage());
+                        Log.e(TAG, "Cannot connect to Geocoder, e=", e);
                     } finally {
                         Message msg = Message.obtain();
                         msg.setTarget(handler);
@@ -104,6 +122,8 @@ public class Utils {
                             bundle.putDouble("latitude", latitude);
                             bundle.putDouble("longitude", longitude);
                             msg.setData(bundle);
+                            Log.d(TAG, String.format("getAddressFromLocation.finally: address=%s %s,%s",
+                                    result, latitude, longitude));
                         } else
                             msg.what = 0;
                         msg.sendToTarget();
@@ -111,6 +131,8 @@ public class Utils {
                 }
             };
             thread.start();
+        } else {
+            Log.e(TAG, "Location 0.0???");
         }
     }
 
@@ -135,6 +157,14 @@ public class Utils {
         }
 
         return p1;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
     public static void openSettingsDialog(Context context, Activity activity) {
@@ -175,7 +205,7 @@ public class Utils {
         intent.putExtra("From", title);
         intent.putExtra("Message", message);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, reqCode, intent,
-                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         String channelId = context.getResources().getString(R.string.appName); //"channel_name";
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(android.R.drawable.ic_dialog_map)
@@ -188,7 +218,7 @@ public class Utils {
                 .setContentIntent(pendingIntent);
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Channel Name";// The user-visible name of the channel.
+            CharSequence name = context.getResources().getString(R.string.appName) + " Notification Channel";// The user-visible name of the channel.
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
             notificationManager.createNotificationChannel(mChannel);
@@ -238,7 +268,63 @@ public class Utils {
         locationRequestBuilder.setGranularity(Granularity.GRANULARITY_FINE); // Fine-grained location updates
         locationRequestBuilder.setPriority(Priority.PRIORITY_HIGH_ACCURACY);
         locationRequestBuilder.setWaitForAccurateLocation(false);
+        locationRequestBuilder.setMaxUpdates(1);
         return locationRequestBuilder.build();
+    }
+
+    public static void playSound(Context context, int resources, int delay) {
+        MediaPlayer mMediaPlayer = null;
+        boolean mStartPlaying = true;
+        try {
+            if (mStartPlaying) {
+                mMediaPlayer = new MediaPlayer();
+
+                Uri uri = Uri.parse(packageURI + "/" + resources);
+                mMediaPlayer.setDataSource(context, uri);
+                mMediaPlayer.prepare();
+                mMediaPlayer.start();
+
+                int count = 0;
+                do {
+                    slumber(delay);
+                } while (mMediaPlayer.isPlaying() && count++ < 5);
+                mMediaPlayer.reset();
+            }
+            mStartPlaying = !mStartPlaying;
+        } catch (IOException e) {
+            Toast.makeText(
+                            context,
+                            getAppName(context)
+                                    + " Could not play sound, reason "
+                                    + e.getMessage(), Toast.LENGTH_SHORT)
+                    .show();
+            Log.e(TAG, "playSound.prepare() failed");
+        } finally {
+            if (mMediaPlayer != null) {
+                try {
+                    mMediaPlayer.release();
+                } catch (Exception e) {
+                }
+            }
+            mMediaPlayer = null;
+            mStartPlaying = false;
+        }
+    }
+
+    public static void playSound(Context context, int resources) {
+        playSound(context, resources, 500);
+    }
+
+    public static String getAppName(Context context) {
+        return context.getResources().getString(R.string.appName);
+    }
+
+    public static void slumber(int delay) {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

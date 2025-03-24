@@ -259,11 +259,44 @@
                 android:max="60"
                 android:min="0" />
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/toneOnLocationUpdateCheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tone on location update" />
+
+                <ImageButton
+                    android:id="@+id/toneOnLocationUpdateImageButton"
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:backgroundTint="@android:color/transparent"
+                    android:contentDescription="@string/toneOnLocationUpdateHint"
+                    app:srcCompat="@android:drawable/ic_menu_help" />
+            </LinearLayout>
+
             <CheckBox
                 android:id="@+id/debugModeCheckBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Debug mode" />
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/buttonReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reset Settings" />
+        </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

@@ -2,6 +2,9 @@ package com.gncbrown.GetMeBack.Services;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
@@ -29,19 +33,20 @@ import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.model.LatLng;
 
 public class LocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
     private static final String TAG = "LocationService";
+
+    private static final int NOTIFICATION_ID = 123;
+    private static final String CHANNEL_ID = "precise_location_channel";
 
     private static Context context;
     private static Preferences prefs;
@@ -98,6 +103,91 @@ public class LocationService extends Service implements
         }
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
+        context = getBaseContext();
+        prefs = new Preferences(context);
+
+        navigationMethods = getResources().getStringArray(R.array.navigationMethods);
+        if (useLocationBuilder) {
+            fuzedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+            // Create a notification for the foreground service
+            Notification notification = createNotification();
+
+            try {
+                // Promote the service to the foreground immediately
+                startForeground(NOTIFICATION_ID, notification);
+
+                if (intent.hasExtra("LocationAction")) {
+                    String action = intent.getStringExtra("LocationAction");
+                    if (action.equals(context.getResources().getString(R.string.ACTION_GET_LOCATION)))
+                        startLocationUpdates(true);
+                    else if (action.equals(context.getResources().getString(R.string.ACTION_GO_TO_DESTINATION)))
+                        goToDestination();
+                    else if (action.equals(context.getResources().getString(R.string.ACTION_LAUNCH)))
+                        launchApp();
+                    else
+                        Log.e(TAG, String.format("onStartCommand; action %s unknown", action));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "onStartCommand: Exception " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        } else {
+            if (mGoogleApiClient == null) {
+                mGoogleApiClient = new GoogleApiClient.Builder(this)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .addApi(LocationServices.API)
+                        .build();
+
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGoogleApiClient.blockingConnect();
+                    }
+                });
+
+                //mGoogleApiClient.connect();
+            }
+        }
+
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (intent.hasExtra("NavigationMode")) {
+            String action = intent.getStringExtra("NavigationMode");
+            if (action.equals(context.getResources().getString(R.string.ACTION_GET_LOCATION)))
+                startLocationUpdates(true);
+            else if (action.equals(context.getResources().getString(R.string.ACTION_GO_TO_DESTINATION)))
+                goToDestination();
+            else if (action.equals(context.getResources().getString(R.string.ACTION_LAUNCH)))
+                launchApp();
+            else
+                Log.e(TAG, String.format("onStartCommand; action %s unknown", action));
+
+        }
+        return Service.START_NOT_STICKY;
+    }
+
+    private Notification createNotification() {
+        String channelName = "Location Service Channel";
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, channelName, importance);
+        channel.setDescription("Channel for Location Service");
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Location Service")
+                .setContentText("Service is running...")
+                .setSmallIcon(R.drawable.icon);
+
+        return builder.build();
+    }
+
+
     private void goToDestination() {
         LatLng destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Double destinationLatitude = destinationLatLng.latitude;
@@ -109,7 +199,7 @@ public class LocationService extends Service implements
         mBuilder.setSingleChoiceItems(navigationMethods, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0,1);
+                String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0, 1);
                 // Launch maps intent
                 Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
                         selectedNavigationMethod));
@@ -129,7 +219,7 @@ public class LocationService extends Service implements
     private void launchApp() {
         String packageName = getApplicationContext().getResources().getString(R.string.myPackage);
         Intent intent = new Intent("android.intent.category.LAUNCHER");
-        intent.setClassName(packageName,packageName + ".MainActivity");
+        intent.setClassName(packageName, packageName + ".MainActivity");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
@@ -156,7 +246,7 @@ public class LocationService extends Service implements
             // Create the location request
 
             fuzedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-            LocationRequest locationRequest = Utils.createLocationRequest(getApplicationContext());
+            mLocationRequest = Utils.createLocationRequest(context);
             locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -172,7 +262,15 @@ public class LocationService extends Service implements
                     super.onLocationAvailability(locationAvailability);
                 }
             };
-            fuzedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+            fuzedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, Looper.getMainLooper());
+
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+                        mLocationRequest, this);
+            } else {
+                Log.d(TAG, "GoogleAPIClient not connected yet!");
+                //Toast.makeText(getApplicationContext(), "GoogleAPIClient not connected yet!", Toast.LENGTH_SHORT).show();
+            }
 
             Log.d("reque", "--->>>>");
         } else {
@@ -265,32 +363,11 @@ public class LocationService extends Service implements
 
         Utils.makeNotification(getApplicationContext(), "Acquire Location", msg, ButtonWidgetReceiver.REQ_CODE);
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
+        if ((boolean)prefs.retrieveFromPreferences("ToneOnLocationUpdate"))
+            Utils.playSound(context, R.raw.ding, 100);
     }
 
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
-        context = getBaseContext();
-        prefs = new Preferences(context);
-
-        navigationMethods = getResources().getStringArray(R.array.navigationMethods);
-        fuzedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        if (intent.hasExtra("action")) {
-            String action = intent.getStringExtra("action");
-            if (action.equals(context.getResources().getString(R.string.ACTION_GET_LOCATION)))
-                startLocationUpdates(true);
-            else if (action.equals(context.getResources().getString(R.string.ACTION_GO_TO_DESTINATION)))
-                goToDestination();
-            else if (action.equals(context.getResources().getString(R.string.ACTION_LAUNCH)))
-                launchApp();
-            else
-                Log.e(TAG, String.format("onStartCommand; action %s unknown", action));
-
-        }
-        return Service.START_NOT_STICKY;
-    }
 
     @Override
     public IBinder onBind(Intent intent) {

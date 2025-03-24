@@ -5,16 +5,19 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,7 +26,11 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class SettingsActivity extends AppCompatActivity {
+    private static final String TAG = "SettingsActivity";
 
     private static Context context;
     private static Preferences prefs;
@@ -38,13 +45,43 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView maxUpdateDelayTextView;
     private TextView killAfterTextView;
     private SeekBar killAfterSeekBar;
+    private CheckBox buildingsCheckBox;
+    private CheckBox trafficCheckBox;
+    private CheckBox indoorModeCheckBox;
+    private CheckBox debugModeCheckBox;
+    private CheckBox toneOnLocationUpdateCheckBox;
 
     private int numberOfIncrements = (10000 - 100) / 100;
+
+
+    public void handleUncaughtException(Thread thread, Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString(); // stack trace as a string
+        String pStackTrace = sStackTrace.replaceAll("\n\t", "\n...");
+        String msg = "Unhandled exception: " + e.getMessage() + ", stack trace:\n"
+                + pStackTrace;
+        Log.e(TAG, msg);
+        prefs.saveToPreferences("StackTrace", msg);
+
+        System.exit(1); // kill off the crashed app
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+
+        // Setup handler for uncaught exceptions.
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable e) {
+                handleUncaughtException(thread, e);
+            }
+        });
+
         prefs = new Preferences(context);
 
         setContentView(R.layout.activity_settings);
@@ -56,7 +93,7 @@ public class SettingsActivity extends AppCompatActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.topView), (v, insets) -> {
                 int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-                v.setPadding(0, topInset+100, 0, 0);
+                v.setPadding(0, topInset+50, 0, 0);
                 return WindowInsetsCompat.CONSUMED;
             });
         }
@@ -145,12 +182,12 @@ public class SettingsActivity extends AppCompatActivity {
         maxUpdateDelaySeekBar = findViewById(R.id.maxUpdateDelaySeekBar);
         int maxUpdateDelay = (int) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
         maxUpdateDelaySeekBar.setProgress((int)(maxUpdateDelay/100));
-        updateSeekbarTextView(maxUpdateDelayTextView, "Min update delay: ", maxUpdateDelay, "millis");
+        updateSeekbarTextView(maxUpdateDelayTextView, "Min update delay: ", maxUpdateDelay, "ms");
         maxUpdateDelaySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int milliseconds = 100 + (progress * 100);
-                updateSeekbarTextView(maxUpdateDelayTextView, "Min update delay: ", milliseconds, "millis");
+                updateSeekbarTextView(maxUpdateDelayTextView, "Min update delay: ", milliseconds, "ms");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -195,7 +232,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
 
-        CheckBox buildingsCheckBox = findViewById(R.id.buildingsCheckBox);
+        buildingsCheckBox = findViewById(R.id.buildingsCheckBox);
         buildingsCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowBuildings"));
         buildingsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.saveToPreferences("ShowBuildings", isChecked);
@@ -205,7 +242,7 @@ public class SettingsActivity extends AppCompatActivity {
             showPopup(v, context.getResources().getString(R.string.showBuildingsHint));
         });
 
-        CheckBox trafficCheckBox = findViewById(R.id.trafficCheckBox);
+        trafficCheckBox = findViewById(R.id.trafficCheckBox);
         trafficCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowTraffic"));
         trafficCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.saveToPreferences("ShowTraffic", isChecked);
@@ -215,7 +252,7 @@ public class SettingsActivity extends AppCompatActivity {
             showPopup(v, context.getResources().getString(R.string.showTrafficHint));
         });
 
-        CheckBox indoorModeCheckBox = findViewById(R.id.indoorModeCheckBox);
+        indoorModeCheckBox = findViewById(R.id.indoorModeCheckBox);
         indoorModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("IndoorMode"));
         indoorModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.saveToPreferences("IndoorMode", isChecked);
@@ -226,10 +263,46 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
 
-        CheckBox debugModeCheckBox = findViewById(R.id.debugModeCheckBox);
+        debugModeCheckBox = findViewById(R.id.debugModeCheckBox);
         debugModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("DebugMode"));
         debugModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.saveToPreferences("DebugMode", isChecked);
+        });
+
+        toneOnLocationUpdateCheckBox = findViewById(R.id.toneOnLocationUpdateCheckBox);
+        toneOnLocationUpdateCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ToneOnLocationUpdate"));
+        toneOnLocationUpdateCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            prefs.saveToPreferences("ToneOnLocationUpdate", isChecked);
+        });
+        ImageButton toneOnLocationUpdateImageButton = (ImageButton)findViewById(R.id.toneOnLocationUpdateImageButton);
+        toneOnLocationUpdateImageButton.setOnClickListener(v -> {
+            showPopup(v, context.getResources().getString(R.string.toneOnLocationUpdateHint));
+        });
+
+        Button buttonReset = findViewById(R.id.buttonReset);
+        buttonReset.setOnClickListener(v -> {
+            prefs.resetPreferences();
+
+            buildingsCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowBuildings"));
+            trafficCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowTraffic"));
+            indoorModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("IndoorMode"));
+            debugModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("DebugMode"));
+            toneOnLocationUpdateCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ToneOnLocationUpdate"));
+
+            int seekbarMillis = (int)(prefs.retrieveFromPreferences("GPSRefreshRateMillis"));
+            gpsRefreshRateMillisSeekBar.setProgress((int)(seekbarMillis/100));
+            seekbarMillis = (int)(prefs.retrieveFromPreferences("MinUpdateIntervalMillis"));
+            minUpdateIntervalSeekBar.setProgress((int)(seekbarMillis/100));
+            seekbarMillis = (int)(prefs.retrieveFromPreferences("MaxUpdateDelayMillis"));
+            maxUpdateDelaySeekBar.setProgress((int)(seekbarMillis/100));
+
+            int seekbarMeters = (int)(prefs.retrieveFromPreferences("MinUpdateDistanceMeters"));
+            minUpdateDistanceSeekBar.setProgress((int)(seekbarMeters));
+
+            int seekbarMinutes = (int)(prefs.retrieveFromPreferences("KillAfterMinutes"));
+            killAfterSeekBar.setProgress((int)(seekbarMinutes));
+
+            Toast.makeText(context, "Settings reset to defaults", Toast.LENGTH_SHORT).show();
         });
     }
 

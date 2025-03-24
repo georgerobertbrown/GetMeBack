@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -22,6 +24,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -63,6 +66,7 @@ public class PreciseLocationActivity extends AppCompatActivity
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
     private LatLng destinationLatLng;
+    private double destinationAltitude;
 
     private TextView locationTextView;
     private float zoomLevel;
@@ -108,6 +112,11 @@ public class PreciseLocationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         context = this;
 
+        if (destinationMarker == null)
+            destinationMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+        if (currentMarker == null)
+            currentMarker = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+
         // Setup handler for uncaught exceptions.
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -131,13 +140,12 @@ public class PreciseLocationActivity extends AppCompatActivity
             });
         }
 
+        destinationAltitude = (double) prefs.retrieveFromPreferences("DestinationAltitude");
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         locationTextView = findViewById(R.id.locationTextView);
         locationTextView.setText("No location yet");
-
-        ImageButton buttonExitPreciseMap = findViewById(R.id.buttonExitPreciseMap);
-        buttonExitPreciseMap.setOnClickListener(v -> {
-            finish();
-        });
 
         // Initialize the destination LatLng
         destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation"); //new LatLng(34.0522, -118.2437); // Example: Los Angeles
@@ -156,6 +164,25 @@ public class PreciseLocationActivity extends AppCompatActivity
         int killAfterMinutes = (int) prefs.retrieveFromPreferences("KillAfterMinutes");
         if (killAfterMinutes > 0)
             handler.postDelayed(closeActivityRunnable, killAfterMinutes*60*1000);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_precise, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        String menuTitle = item.getTitle().toString();
+        if (menuTitle.equals("Quit")) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -236,14 +263,16 @@ public class PreciseLocationActivity extends AppCompatActivity
 
         double distance = calculateDistanceHaversine(location.getLatitude(), location.getLongitude(),
                 destinationLatLng.latitude, destinationLatLng.longitude);
+        double altitudeDiff = destinationAltitude - location.getAltitude();
         // Draw a route to the destination
         drawRoute(currentLatLng, destinationLatLng);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                locationTextView.setText(String.format("Location: %s, %s\nDistance: %s\n",
-                        location.getLatitude(), location.getLongitude(), formatDistance(distance)));
+                locationTextView.setText(String.format("Location: %s, %s\nDistance: %s\nAltitude: %s\n",
+                        location.getLatitude(), location.getLongitude(), formatDistance(distance),
+                        formatAltitude(altitudeDiff)));
             }
         });
     }
@@ -255,6 +284,10 @@ public class PreciseLocationActivity extends AppCompatActivity
             double kilometers = distance / 1000;
             return String.format("%.3fkm", kilometers);
         }
+    }
+
+    private static String formatAltitude(double altitude) {
+        return String.format("%s%.3fm", (altitude < 0 ? "↓" : "↑"), Math.abs(altitude));
     }
 
     private static double calculateDistanceHaversine(double lat1, double lon1, double lat2, double lon2) {

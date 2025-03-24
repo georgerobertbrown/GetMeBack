@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -18,16 +20,22 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -74,6 +82,8 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -145,6 +155,22 @@ public class MainActivity extends AppCompatActivity implements
 
     private LocalBroadcastManager bManager;
     public static final String ACTION_UPDATE_DESTINATION_FROM_WATCH = "com.gncbrown.GetMeBack.ACTION_UPDATE_DESTINATION_FROM_WATCH";
+
+
+
+    public void handleUncaughtException(Thread thread, Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString(); // stack trace as a string
+        String pStackTrace = sStackTrace.replaceAll("\n\t", "\n...");
+        String msg = "Unhandled exception: " + e.getMessage() + ", stack trace:\n"
+                + pStackTrace;
+        Log.e(TAG, msg);
+        prefs.saveToPreferences("StackTrace", msg);
+
+        System.exit(1); // kill off the crashed app
+    }
 
     private static Handler addressResultHandler = new Handler() {
         @Override
@@ -250,6 +276,14 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Setup handler for uncaught exceptions.
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable e) {
+                handleUncaughtException(thread, e);
+            }
+        });
+
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             EdgeToEdge.enable(this);
@@ -263,11 +297,11 @@ public class MainActivity extends AppCompatActivity implements
             });
         }
 
-
         CoordinatorLayout mainLayout = findViewById(R.id.topView);
 
         context = this;
         prefs = new Preferences(context);
+
         bManager = LocalBroadcastManager.getInstance(this);
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
@@ -311,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements
         fabLayer.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                toastMessage("Action: Map layers");
+                showPopup(view, "Action: Map layers");
                 return true;
             }
         });
@@ -320,7 +354,8 @@ public class MainActivity extends AppCompatActivity implements
         fabMark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toastMessage("Mark location");
+                ///toastMessage("Mark location");
+                showPopup(view, "Mark location");
                 locationSource = LocationSource.DestinationLocation;
 
                 runOnUiThread(new Runnable() {
@@ -335,7 +370,8 @@ public class MainActivity extends AppCompatActivity implements
         fabMark.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                toastMessage("Action: Mark current location");
+                ////toastMessage("Action: Mark current location");
+                showPopup(view, "Action: Mark current location");
                 return true;
             }
         });
@@ -357,7 +393,8 @@ public class MainActivity extends AppCompatActivity implements
         fabGo.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                toastMessage("Action: use turn-by-turn directions to mark");
+                ////toastMessage("Action: use turn-by-turn directions to mark");
+                showPopup(view, "Action: use turn-by-turn directions to mark");
                 return true;
             }
         });
@@ -397,7 +434,8 @@ public class MainActivity extends AppCompatActivity implements
         fabPreciseLocation.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                toastMessage("Action: use precise location to mark");
+                ////toastMessage("Action: use precise location to mark");
+                showPopup(view, "Action: use precise location to mark");
                 return true;
             }
         });
@@ -450,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements
 
         registerReceivers(true);
 
-        String launchedFrom = getIntent().getStringExtra("ACTION");
+        String launchedFrom = getIntent().getStringExtra("LaunchedFrom");
         if (launchedFrom != null && launchedFrom.equals(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET))
             requestLocationUpdate(true);
 
@@ -595,17 +633,10 @@ public class MainActivity extends AppCompatActivity implements
 
         } else if (menuTitle.equals(OPTION_VALUES)) {
             moreSubmenuContext = "";
-            LatLng destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
-            String destinationAddress = (String) prefs.retrieveFromPreferences("DestinationAddress");
-            Double destinationAltitude = (Double) prefs.retrieveFromPreferences("DestinationAltitude");
-            LatLng homeLatLng = (LatLng) prefs.retrieveFromPreferences("HomeLocation");
-            String homeAddress = (String) prefs.retrieveFromPreferences("HomeAddress");
-            String values = String.format("Lat/Lng(Alt): %s, %s (%sm)\nUpdate interval: %sms\nAddress: %s\nHome Lat/Lng: %s, %s\nHome: %s",
-                    destinationLatLng.latitude, destinationLatLng.longitude, destinationAltitude,
-                    prefs.retrieveFromPreferences("GPSRefreshRateMillis"),
-                    destinationAddress,
-                    homeLatLng.latitude, homeLatLng.longitude, homeAddress);
-            Utils.showAlertDialog(context, "Values", values);
+            Intent showHelp = new Intent(getApplicationContext(), HelpActivity.class);
+            showHelp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            showHelp.putExtra("type", "values");
+            context.startActivity(showHelp);
 
         } else if (menuTitle.equals(OPTION_LOCATION)) {
             moreSubmenuContext = OPTION_LOCATION;
@@ -1129,4 +1160,58 @@ public class MainActivity extends AppCompatActivity implements
         builder.show();
     }
 
+    private void showPopup(View clickedView, String hint) {
+        // Get the screen coordinates of the clicked view
+        int[] location = new int[2];
+        clickedView.getLocationOnScreen(location);
+        int x = location[0];
+        int y = location[1];
+
+        // Inflate the popup layout
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.popup_hint, null);
+        TextView popupTextView = popupView.findViewById(R.id.popupTextView);
+        popupTextView.setText(hint);
+
+        // Create the PopupWindow
+        int width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        int height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        boolean focusable = true; // Let taps outside the popup dismiss it
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+        // Measure the popup content to determine its height
+        popupView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        int popupHeight = popupView.getMeasuredHeight();
+        int popupWidth = popupView.getMeasuredWidth();
+
+        // Get the screen height
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenHeight = displayMetrics.heightPixels;
+        int screenWidth = displayMetrics.widthPixels;
+
+        // Get the status bar height
+        int statusBarHeight = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+        }
+
+        // Calculate the available space below the clicked view
+        int availableSpaceBelow = screenHeight - y - statusBarHeight;
+
+        // Adjust Y if it's too close to the bottom
+        if (availableSpaceBelow < popupHeight) {
+            y -= popupHeight + clickedView.getHeight();
+        }
+
+        // Push down if it is too close to the top
+        if (y < statusBarHeight) {
+            y += clickedView.getHeight() + popupHeight;
+        }
+
+        // Show the popup window
+        popupWindow.showAtLocation(clickedView, Gravity.NO_GRAVITY, x, y);
+    }
 }
