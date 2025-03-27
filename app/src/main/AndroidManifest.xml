@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.gncbrown.GetMeBack">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -23,9 +24,8 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <!-- deprecated
-                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
-                -->
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER"
+                    tools:ignore="WearableBindListener" />
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <action android:name="com.google.android.gms.wearable.CAPABILITY_CHANGED" />
@@ -58,6 +58,11 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settingsName"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ServiceListActivity"
             android:exported="false"
             android:label="@string/settingsName"
             android:theme="@style/AppTheme" />

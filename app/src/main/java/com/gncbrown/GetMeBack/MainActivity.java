@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -49,6 +50,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.gncbrown.GetMeBack.Services.WatchListenerService;
 import com.gncbrown.GetMeBack.Utilities.BackgroundTask;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
 import com.gncbrown.GetMeBack.Utilities.NamedLocation;
@@ -261,12 +263,14 @@ public class MainActivity extends AppCompatActivity implements
             if (latitude != 0.0 && longitude != 0.0) {
                 destinationLatitude = latitude;
                 destinationLongitude = longitude;
-                mGoogleMap.clear();
-                mGoogleMap.addMarker(new MarkerOptions()
-                        .position(home)
-                        .title("Destination")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), ZOOM));
+                animateMap(new LatLng(latitude, longitude), "Destination");
+// TODO use animateMap instead of the following
+//                mGoogleMap.clear();
+//                mGoogleMap.addMarker(new MarkerOptions()
+//                        .position(home)
+//                        .title("Destination")
+//                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+//                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), ZOOM));
             }
         }
     };
@@ -354,8 +358,7 @@ public class MainActivity extends AppCompatActivity implements
         fabMark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ///toastMessage("Mark location");
-                showPopup(view, "Mark location");
+                toastMessage("Mark location");
                 locationSource = LocationSource.DestinationLocation;
 
                 runOnUiThread(new Runnable() {
@@ -487,6 +490,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         registerReceivers(true);
+        startServices();
 
         String launchedFrom = getIntent().getStringExtra("LaunchedFrom");
         if (launchedFrom != null && launchedFrom.equals(ButtonWidgetReceiver.ACTION_ACTIVITY_UPDATE_FROM_WIDGET))
@@ -615,7 +619,7 @@ public class MainActivity extends AppCompatActivity implements
 
         } else if (menuTitle.equals(OPTION_VERSION)) {
             moreSubmenuContext = "";
-            Utils.showAlertDialog(context, "Version", Utils.getVersion());
+            Utils.showDialog(context, "Version", Utils.getVersion(), android.R.drawable.ic_dialog_info);
 
         } else if (menuTitle.equals(OPTION_WELCOME)) {
             moreSubmenuContext = "";
@@ -1083,6 +1087,12 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void startServices() {
+        Intent iWatchListenerService = new Intent(context.getApplicationContext(), WatchListenerService.class);
+        ComponentName componentName = context.getApplicationContext().startService(iWatchListenerService);
+        Log.d(TAG, "startServices: WatchListenerService componentName=" + componentName);
     }
 
     private void registerReceivers(boolean flag) {

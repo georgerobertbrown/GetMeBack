@@ -1,10 +1,10 @@
 package com.gncbrown.GetMeBack.Utilities;
 
-import static android.content.Context.LAYOUT_INFLATER_SERVICE;
+import static android.content.Context.ACTIVITY_SERVICE;
 import static androidx.core.app.ActivityCompat.startActivityForResult;
-import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.NotificationChannel;
@@ -15,8 +15,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
@@ -30,8 +28,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,7 +62,7 @@ public class Utils {
                 + "\nemail: georgerobertbrown@gmail.com";
     }
 
-    public static void showAlertDialog(Context context, String title, String message) {
+    public static void old_showAlertDialog(Context context, String title, String message) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
         dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -78,6 +74,44 @@ public class Utils {
         dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
         Dialog dialog = dialogBuilder.create();
         dialog.show();
+    }
+
+    public static void showDialog(Context context, String title, String message, int iconId) {
+        try {
+            // Inflate the custom layout
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View dialogView = inflater.inflate(R.layout.dialog_scrollable_message, null);
+
+            // Get a reference to the TextView
+            TextView messageTextView = dialogView.findViewById(R.id.scrollable_message);
+
+            // Set the message text
+            messageTextView.setText(message);
+
+            // Build the AlertDialog
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+            dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialogBuilder.setTitle(title);
+            dialogBuilder.setIcon(iconId);
+
+            // Set the custom view
+            dialogBuilder.setView(dialogView);
+
+            // Create and show the dialog
+            Dialog dialog = dialogBuilder.create();
+            dialog.show();
+        } catch (Exception e) {
+            Log.e(TAG, "showAlertDialog: ", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void showAlertDialog(Context context, String title, String message) {
+        showDialog(context, title, message, android.R.drawable.ic_dialog_alert);
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {
@@ -325,6 +359,25 @@ public class Utils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean isServiceRunning(Context context,
+                                           String serviceClassName) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> services = manager.getRunningServices(Integer.MAX_VALUE);
+        for (ActivityManager.RunningServiceInfo service : services) {
+            String serviceName = service.service.getClassName();
+
+            // Log.d(TAG, "->service=" + serviceName);
+            if (serviceName.contains(serviceClassName)) {
+//				Log.d(TAG, "Service " + serviceClassName
+//						+ " is ALREADY running");
+                return true;
+            }
+        }
+//		Log.d(TAG, "Service " + serviceClassName + " is NOT running");
+        return false;
     }
 
 }

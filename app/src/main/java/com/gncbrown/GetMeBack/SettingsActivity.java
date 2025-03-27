@@ -1,6 +1,7 @@
 package com.gncbrown.GetMeBack;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
@@ -303,6 +304,13 @@ public class SettingsActivity extends AppCompatActivity {
             killAfterSeekBar.setProgress((int)(seekbarMinutes));
 
             Toast.makeText(context, "Settings reset to defaults", Toast.LENGTH_SHORT).show();
+        });
+
+        Button buttonServices = findViewById(R.id.buttonServices);
+        buttonServices.setOnClickListener(v -> {
+            Intent servicesList = new Intent(context, ServiceListActivity.class);
+            servicesList.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(servicesList);
         });
     }
 

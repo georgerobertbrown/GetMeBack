@@ -7,6 +7,7 @@
     <string name="appName">&appname;</string>
     <string name="preciseLocationName">&appname; Precise Location</string>
     <string name="settingsName">&appname; Settings</string>
+    <string name="servicesName">&appname; Services</string>
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
     <string name="helpTitle">Help</string>

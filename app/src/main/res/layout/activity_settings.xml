@@ -291,11 +291,19 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
+
             <Button
                 android:id="@+id/buttonReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Reset Settings" />
+
+            <Button
+                android:id="@+id/buttonServices"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                android:text="Services" />
         </LinearLayout>
 
         </LinearLayout>

@@ -7,3 +7,5 @@
 7. Display altitude
 8. Settings reset
 9. Better popup menu placement
+10. Service management
+11. Start WatchListenerService on startup

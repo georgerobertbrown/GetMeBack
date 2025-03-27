@@ -23,7 +23,7 @@ public class WatchListenerService extends WearableListenerService {
         Log.d(TAG, "WatchListenerService.onMessageReceived: " + messageEvent);
 
         prefs = new Preferences(this);
-        if (messageEvent.getPath().startsWith(SEND_LOCATION_PATH)) {
+        if (messageEvent.getPath().contains(SEND_LOCATION_PATH)) {
             String packageName = new String(messageEvent.getData());
             Log.d(TAG, "Package name: " + packageName);
             String location = messageEvent.getPath().substring(SEND_LOCATION_PATH.length() + 1);
