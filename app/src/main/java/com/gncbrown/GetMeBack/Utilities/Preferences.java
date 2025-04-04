@@ -55,7 +55,14 @@ public class Preferences {
         preferencesMap.add(new Entry("FirstTime", DataType.BOOLEAN, true));
         preferencesMap.add(new Entry("DebugMode", DataType.BOOLEAN, false));
         preferencesMap.add(new Entry("ToneOnLocationUpdate", DataType.BOOLEAN, false));
+
         preferencesMap.add(new Entry("StackTrace", DataType.STRING, ""));
+        preferencesMap.add(new Entry("LogFileLimit", DataType.INTEGER, 100));
+        preferencesMap.add(new Entry("LogLevel", DataType.STRING, "Normal"));
+        preferencesMap.add(new Entry("ReverseLog", DataType.BOOLEAN, false));
+        preferencesMap.add(new Entry("FilterLog", DataType.STRING, ""));
+        preferencesMap.add(new Entry("SearchLog", DataType.STRING, ""));
+        preferencesMap.add(new Entry("LogFileLimit", DataType.INTEGER, 100));
     }
 
     public enum DataType {

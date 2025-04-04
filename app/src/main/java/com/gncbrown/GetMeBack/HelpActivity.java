@@ -22,6 +22,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.gncbrown.GetMeBack.Utilities.Logger;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 
@@ -91,16 +92,13 @@ public class HelpActivity extends AppCompatActivity {
                 }
             }
         });
-        if (!(boolean)prefs.retrieveFromPreferences("DebugMode") && (
+        if (Logger.loggable(context, Logger.LogLevel.Debug) && (
                 //!helpType.equals("welcome") ||
             Utils.hasPermissions(context, MainActivity.requiredPermissions)))
             requestPermission.setVisibility(View.GONE);
 
         String releaseNotes = "";
         try {
-            // Programmatically load text from an asset and place it into the
-            // text view. Note that the text we are loading is ASCII, so we
-            // need to convert it to UTF-16.
             InputStream is;
             if (helpType.equals("notification")) {
                 String title = getIntent().getStringExtra("title");
@@ -115,9 +113,6 @@ public class HelpActivity extends AppCompatActivity {
 //						Log.d(TAG, "asset=" + asset);
                         is = getAssets().open(asset);
 
-                        // We guarantee that the available method returns the
-                        // total size of the asset... of course, this does
-                        // mean that a single asset can't be more than 2 gigs.
                         int size = is.available();
 
                         // Read the entire asset into a local byte buffer.
@@ -141,9 +136,6 @@ public class HelpActivity extends AppCompatActivity {
 
                 is = getAssets().open(helpFileName);
 
-                // We guarantee that the available method returns the total
-                // size of the asset... of course, this does mean that a single
-                // asset can't be more than 2 gigs.
                 int size = is.available();
 
                 // Read the entire asset into a local byte buffer.

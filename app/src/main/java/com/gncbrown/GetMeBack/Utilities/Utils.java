@@ -14,7 +14,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.MediaPlayer;
@@ -48,12 +50,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 
 public class Utils {
     private static final String TAG = "Utils";
 
+    public static String DATE_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss.SSS";
     public static String packageURI = "android.resource://com.gncbrown.GetMeBackWatch";
+
+    public static String NL = "<br>\n"; // "\n";
 
     public static String getVersion() {
         return "Version " + com.gncbrown.GetMeBack.BuildConfig.VERSION_NAME
@@ -379,5 +385,81 @@ public class Utils {
 //		Log.d(TAG, "Service " + serviceClassName + " is NOT running");
         return false;
     }
+
+    public static String getDateTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                DATE_FORMAT_STRING, Locale.getDefault());
+        Date date = new Date();
+        String d = dateFormat.format(date);
+        return d;
+    }
+
+    public static int getLogLevelColor(Logger.LogLevel logLevel) {
+        int color = Color.BLACK;
+        if (logLevel.equals(Logger.LogLevel.Error))
+            color = Color.RED;
+        else if (logLevel.equals(Logger.LogLevel.Warning))
+            color = Color.YELLOW;
+//		else if (logLevel.equals(Logger.LogLevel.Info))
+//			color = android.R.color.holo_green_dark;
+        else if (logLevel.equals(Logger.LogLevel.Debug))
+            color = Color.DKGRAY; //Color.CYAN;
+        return color;
+    }
+
+    public static String getStartTag(Logger.LogLevel logLevel) {
+        String startTag = "";
+        if (logLevel == Logger.LogLevel.Error)
+            startTag = "<font color='red'><b>";
+        else if (logLevel == Logger.LogLevel.Warning)
+            startTag = "<font color='yellow'><b>";
+//		else if (logLevel == Logger.LogLevel.Info)
+//			startTag = "<font color='green'><b>";
+        else if (logLevel == Logger.LogLevel.Debug)
+            startTag = "<font color='gray'><b>";
+        return startTag;
+    }
+
+    public static String getEndTag(Logger.LogLevel logLevel) {
+        String endTag = "";
+        if (logLevel == Logger.LogLevel.Error)
+            endTag = "</b></font>";
+        else if (logLevel == Logger.LogLevel.Warning)
+            endTag = "</b></font>";
+//		else if (logLevel == Logger.LogLevel.Info)
+//			endTag = "</b></font>";
+        else if (logLevel == Logger.LogLevel.Debug)
+            endTag = "</b></font>";
+        return endTag;
+    }
+
+    public static boolean isNullOrEmpty(String str) {
+        return str == null || (str != null && str.isEmpty());
+    }
+
+    public static String generateUniqueString() {
+        return UUID.randomUUID().toString();
+    }
+
+    public static boolean isDark(Context context) {
+        boolean b =  false;
+        try {
+            b =(context.getResources().getConfiguration().uiMode
+                    & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        } catch (Exception e) {
+        }
+        //Log.d(TAG, "isDark; " + b);
+        return b;
+    }
+
+    public static int indexOf(String[] array, String value) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(value)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 
 }

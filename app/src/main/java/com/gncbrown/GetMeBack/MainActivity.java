@@ -11,8 +11,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -53,6 +51,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.gncbrown.GetMeBack.Services.WatchListenerService;
 import com.gncbrown.GetMeBack.Utilities.BackgroundTask;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
+import com.gncbrown.GetMeBack.Utilities.Logger;
+import com.gncbrown.GetMeBack.Utilities.MySQLiteHelper;
 import com.gncbrown.GetMeBack.Utilities.NamedLocation;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
@@ -99,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements
     private static final int requestCode = 40;
     public static Context context;
     public static Preferences prefs;
+    private static MySQLiteHelper dbHelper;
+    private static Logger logger;
 
     private static ProgressBar progressBar;
 
@@ -154,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String OPTION_HOME = "Home";
     private static final String OPTION_QUIT = "Quit";
     private static final String OPTION_SETTINGS = "Settings";
+    private static final String OPTION_LOG = "Show log";
 
     private LocalBroadcastManager bManager;
     public static final String ACTION_UPDATE_DESTINATION_FROM_WATCH = "com.gncbrown.GetMeBack.ACTION_UPDATE_DESTINATION_FROM_WATCH";
@@ -264,13 +267,6 @@ public class MainActivity extends AppCompatActivity implements
                 destinationLatitude = latitude;
                 destinationLongitude = longitude;
                 animateMap(new LatLng(latitude, longitude), "Destination");
-// TODO use animateMap instead of the following
-//                mGoogleMap.clear();
-//                mGoogleMap.addMarker(new MarkerOptions()
-//                        .position(home)
-//                        .title("Destination")
-//                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-//                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), ZOOM));
             }
         }
     };
@@ -305,6 +301,9 @@ public class MainActivity extends AppCompatActivity implements
 
         context = this;
         prefs = new Preferences(context);
+        dbHelper = MySQLiteHelper.getInstance(this);
+        logger = new Logger(this);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.onCreate");
 
         bManager = LocalBroadcastManager.getInstance(this);
 
@@ -373,7 +372,6 @@ public class MainActivity extends AppCompatActivity implements
         fabMark.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                ////toastMessage("Action: Mark current location");
                 showPopup(view, "Action: Mark current location");
                 return true;
             }
@@ -396,7 +394,6 @@ public class MainActivity extends AppCompatActivity implements
         fabGo.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                ////toastMessage("Action: use turn-by-turn directions to mark");
                 showPopup(view, "Action: use turn-by-turn directions to mark");
                 return true;
             }
@@ -437,7 +434,6 @@ public class MainActivity extends AppCompatActivity implements
         fabPreciseLocation.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                ////toastMessage("Action: use precise location to mark");
                 showPopup(view, "Action: use precise location to mark");
                 return true;
             }
@@ -498,8 +494,10 @@ public class MainActivity extends AppCompatActivity implements
 
         prefs.saveToPreferences("FirstTime", false);
 
+        // DEBUG
         String crash = (String)prefs.retrieveFromPreferences("StackTrace");
         Log.d(TAG, "onCreate: last crash=" + crash);
+        // DEBUG
     }
 
     @Override
@@ -682,8 +680,18 @@ public class MainActivity extends AppCompatActivity implements
             Intent showSettings = new Intent(getApplicationContext(), SettingsActivity.class);
             showSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(showSettings);
+
         } else if (menuTitle.equals(OPTION_QUIT)) {
             finish();
+
+        } else if (menuTitle.equals(OPTION_LOG)) {
+            boolean reverseLog = (boolean)prefs.retrieveFromPreferences("ReverseLog");
+            String filter = (String)prefs.retrieveFromPreferences("FilterLog");
+            String log = dbHelper.getLogEntriesAsString(reverseLog, filter);
+            Intent logIntent = new Intent(context, LogDisplay.class);
+            logIntent.putExtra("log", log);
+            logIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(logIntent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -779,8 +787,9 @@ public class MainActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         destinationLatitude = location.getLatitude();
         destinationLongitude = location.getLongitude();
-        String msg = "Updated location: " + destinationLatitude + "," + destinationLongitude;
-        Log.d(TAG, "onLocationChanged: " + msg);
+        String msg = "MainActivity.onLocationChanged: " + destinationLatitude + "," + destinationLongitude;
+        Log.d(TAG, msg);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
         toastMessage(msg);
         progress(false);
 
@@ -820,6 +829,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     private void startLocationService() {
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.startLocationService");
         BackgroundTask bg = new BackgroundTask() {
             @Override
             public void onPreExecute() {
@@ -874,6 +884,7 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
 
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.requestLocationUpdate; start=" + start);
         if (start) {
             progress(true);
             LocationRequest mLocationRequest = Utils.createLocationRequest(context);
@@ -892,6 +903,7 @@ public class MainActivity extends AppCompatActivity implements
                         LatLng updatedLocation = new LatLng(destinationLatitude, destinationLongitude);
                         String locationString = String.format("%s, %s", destinationLatitude, destinationLongitude);
                         String msg = "Updated location: " + locationString;
+                        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.requestLocationUpdate.onLocationResult; " + msg);
 
                         prefs.saveToPreferences("DestinationLocation", new LatLng(destinationLatitude, destinationLongitude));
                         prefs.saveToPreferences("DestinationAltitude", location.getAltitude());
@@ -1038,6 +1050,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void preciseGoToDestination() {
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.preciseGoToDestination");
         Intent intent = new Intent(this, PreciseLocationActivity.class);
         startActivity(intent);
     }
@@ -1067,8 +1080,10 @@ public class MainActivity extends AppCompatActivity implements
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");
                         Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
+                        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.Navigate to: " + gmmIntentUri);
                         startActivity(mapIntent);
                     } catch (Exception e) {
+                        dbHelper.appendLogTranscript(context, Logger.LogLevel.Error, "Navigation Error: " + e.getMessage());
                         Utils.showAlertDialog(context,
                                 "Navigation Error", e.getMessage());
                     }
@@ -1110,6 +1125,7 @@ public class MainActivity extends AppCompatActivity implements
                     bManager.registerReceiver(updateDestinationFromWatchReceiver, new IntentFilter(MainActivity.ACTION_UPDATE_DESTINATION_FROM_WATCH));
                 } catch (Exception e) {
                     Log.e(TAG, "Could not register receivers, e=" + e.getMessage());
+                    dbHelper.appendLogTranscript(context, Logger.LogLevel.Error, "Could not register receivers, e=" + e.getMessage());
                 }
             } else {
                 Log.i(TAG, "Receivers already registered");
@@ -1124,6 +1140,7 @@ public class MainActivity extends AppCompatActivity implements
                     bManager.unregisterReceiver(updateDestinationFromWatchReceiver);
                 } catch (Exception e) {
                     Log.e(TAG, "Could not unregister receivers, e=" + e.getMessage());
+                    dbHelper.appendLogTranscript(context, Logger.LogLevel.Error, "Could not unregister receivers, e=" + e.getMessage());
                 }
             } else {
                 Log.i(TAG, "Receivers already unregistered");

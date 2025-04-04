@@ -7,6 +7,7 @@
     <string name="appName">&appname;</string>
     <string name="preciseLocationName">&appname; Precise Location</string>
     <string name="settingsName">&appname; Settings</string>
+    <string name="logDisplayName">&appname; Log</string>
     <string name="servicesName">&appname; Services</string>
     <string name="fullName">&appname; v&version;</string>
     <string name="myPackage">com.gncbrown.GetMeBack</string>
@@ -32,6 +33,7 @@
     <string name="debugModeHint">Enable debug mode to get more verbose logging.</string>
     <string name="killAfterHint">Stop precise navigation after this many minutes. Protects against battery drain.</string>
     <string name="toneOnLocationUpdateHint">Play tone on GPS update. Provides feedback on getting GPS hits.</string>
+    <string name="logLimitHint">Maximum number of log entries to keep.</string>
 
     <string-array name="navigationMethods">
         <item>Driving</item>
@@ -50,4 +52,15 @@
     <string name="ACTION_ACTIVITY_GO_TO_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_GO_TO_FROM_WIDGET</string>
     <string name="ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_PRECISE_GO_TO_FROM_WIDGET</string>
     <string name="ACTION_ACTIVITY_LAUNCH_FROM_WIDGET">com.gncbrown.GetMeBack.ACTION_ACTIVITY_LAUNCH_FROM_WIDGET</string>
+
+    <string-array name="logLevels">
+        <item>Off</item>
+        <item>Normal</item>
+        <item>Verbose</item>
+        <item>Ridiculous</item>
+        <item>Info</item>
+        <item>Debug</item>
+        <item>Warning</item>
+        <item>Error</item>
+    </string-array>
 </resources>

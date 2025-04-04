@@ -28,16 +28,20 @@ import androidx.core.app.NotificationCompat;
 
 import com.gncbrown.GetMeBack.R;
 import com.gncbrown.GetMeBack.Utilities.ButtonWidgetReceiver;
+import com.gncbrown.GetMeBack.Utilities.Logger;
+import com.gncbrown.GetMeBack.Utilities.MySQLiteHelper;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.model.LatLng;
 
 public class LocationService extends Service implements
@@ -50,6 +54,7 @@ public class LocationService extends Service implements
 
     private static Context context;
     private static Preferences prefs;
+    private static MySQLiteHelper dbHelper;
 
     private static String[] navigationMethods;
 
@@ -105,9 +110,12 @@ public class LocationService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand; flags=" + flags + ", startId=" + startId);
+        String msg = String.format("LocationService.onStartCommand; flags=%s, startId=%s", flags, startId);
+        Log.d(TAG, msg);
         context = getBaseContext();
         prefs = new Preferences(context);
+        dbHelper = MySQLiteHelper.getInstance(this);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
         if (useLocationBuilder) {
@@ -132,7 +140,9 @@ public class LocationService extends Service implements
                         Log.e(TAG, String.format("onStartCommand; action %s unknown", action));
                 }
             } catch (Exception e) {
-                Log.e(TAG, "onStartCommand: Exception " + e.getMessage());
+                msg = "onStartCommand: Exception " + e.getMessage();
+                Log.e(TAG, msg);
+                dbHelper.appendLogTranscript(context, Logger.LogLevel.Error, msg);
                 throw new RuntimeException(e);
             }
         } else {
@@ -192,6 +202,8 @@ public class LocationService extends Service implements
         LatLng destinationLatLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Double destinationLatitude = destinationLatLng.latitude;
         Double destinationLongitude = destinationLatLng.longitude;
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "LocationService.goToDestination: destinationLatitude="
+                + destinationLatitude + ", destinationLongitude=" + destinationLongitude);
 
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(getApplicationContext());
         mBuilder.setTitle(String.format("Choose a navigation method to %s, %s",
@@ -225,7 +237,15 @@ public class LocationService extends Service implements
     }
 
     protected void startLocationUpdates(boolean start) {
-        Log.d(TAG, "startLocationUpdates: start=" + start);
+        int gpsRefreshRateMills = (int) prefs.retrieveFromPreferences("GPSRefreshRateMillis");
+        int minUpdateIntervalMillis = (int) prefs.retrieveFromPreferences("MinUpdateIntervalMillis");
+        int minUpdateDistanceMeters = (int) prefs.retrieveFromPreferences("MinUpdateDistanceMeters");
+        int maxUpdateDelayMills = (int) prefs.retrieveFromPreferences("MaxUpdateDelayMillis");
+        String msg = String.format("LocationService.startLocationUpdates: start=%s, gpsRefreshRateMills=%s, minUpdateIntervalMillis=%s, minUpdateDistanceMeters=%s, maxUpdateDelayMills=%s",
+                start, gpsRefreshRateMills, minUpdateIntervalMillis, minUpdateDistanceMeters, maxUpdateDelayMills);
+        Log.d(TAG, msg);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, msg);
+
         // Request location updates
         if (ActivityCompat.checkSelfPermission(getApplicationContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -247,6 +267,8 @@ public class LocationService extends Service implements
 
             fuzedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             mLocationRequest = Utils.createLocationRequest(context);
+            msg = String.format("LocationService.startLocationUpdates: mLocationRequest=%s", mLocationRequest);
+            dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, msg);
             locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -324,6 +346,7 @@ public class LocationService extends Service implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected");
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, "LocationService.onConnected");
         startLocationUpdates(true);
 
         LoadActivity activityLoader = new LoadActivity();
@@ -342,20 +365,24 @@ public class LocationService extends Service implements
     @Override
     public void onConnectionSuspended(int i) {
         Log.i(TAG, "Connection Suspended");
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, "LocationService.onConnectionSuspended");
         mGoogleApiClient.connect();
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.i(TAG, "Connection failed. Error: " + connectionResult.getErrorCode());
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Error, "LocationService.onConnectionFailed="
+                + connectionResult.getErrorCode());
+        Log.e(TAG, "Connection failed. Error: " + connectionResult.getErrorCode());
     }
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        String msg = "Acquired location: " + latitude + ", " + longitude + " (" + location.getAltitude() + ")";
+        String msg = "LocationService.onLocationChanged: " + latitude + ", " + longitude + " (" + location.getAltitude() + ")";
         Log.d(TAG, "onLocationChanged: " + msg);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
 
         prefs.saveToPreferences("DestinationLocation", new LatLng(latitude, longitude));
         prefs.saveToPreferences("DestinationAltitude", location.getAltitude());
@@ -377,10 +404,12 @@ public class LocationService extends Service implements
 
     private static Handler locationAddressResultHandler = new Handler() {
         @Override
-        public void handleMessage(Message msg) {
-            String destinationAddress = msg.getData().getString("address");
+        public void handleMessage(Message message) {
+            String destinationAddress = message.getData().getString("address");
             prefs.saveToPreferences("DestinationAddress", destinationAddress);
-            Log.d(TAG, "addressResultHandler, result=" + destinationAddress);
+            String msg = "LocationService.locationAddressResultHandler, result=" + destinationAddress;
+            Log.d(TAG, msg);
+            dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
         }
     };
 

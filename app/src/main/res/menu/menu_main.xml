@@ -118,4 +118,10 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/actionLog"
+        android:orderInCategory="100"
+        android:title="Show log"
+        app:showAsAction="never"/>
+
 </menu>

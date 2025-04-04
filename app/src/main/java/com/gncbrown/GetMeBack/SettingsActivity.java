@@ -12,11 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,7 +27,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.gncbrown.GetMeBack.Utilities.MySQLiteHelper;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
+import com.gncbrown.GetMeBack.Utilities.Utils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -35,6 +39,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static Context context;
     private static Preferences prefs;
+    private static MySQLiteHelper dbHelper;
 
     private SeekBar gpsRefreshRateMillisSeekBar;
     private TextView gpsRefreshRateMillisTextView;
@@ -49,8 +54,10 @@ public class SettingsActivity extends AppCompatActivity {
     private CheckBox buildingsCheckBox;
     private CheckBox trafficCheckBox;
     private CheckBox indoorModeCheckBox;
-    private CheckBox debugModeCheckBox;
     private CheckBox toneOnLocationUpdateCheckBox;
+
+    private TextView logFileLimitTextView;
+    private SeekBar logFileLimitSeekBar;
 
     private int numberOfIncrements = (10000 - 100) / 100;
 
@@ -84,6 +91,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         prefs = new Preferences(context);
+        dbHelper = MySQLiteHelper.getInstance(this);
 
         setContentView(R.layout.activity_settings);
 
@@ -264,12 +272,6 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
 
-        debugModeCheckBox = findViewById(R.id.debugModeCheckBox);
-        debugModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("DebugMode"));
-        debugModeCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            prefs.saveToPreferences("DebugMode", isChecked);
-        });
-
         toneOnLocationUpdateCheckBox = findViewById(R.id.toneOnLocationUpdateCheckBox);
         toneOnLocationUpdateCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ToneOnLocationUpdate"));
         toneOnLocationUpdateCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -280,6 +282,76 @@ public class SettingsActivity extends AppCompatActivity {
             showPopup(v, context.getResources().getString(R.string.toneOnLocationUpdateHint));
         });
 
+        String[] debugLevelsArray = getResources().getStringArray(R.array.logLevels);
+        String logLevel = (String)prefs.retrieveFromPreferences("LogLevel");
+        int logLevelIndex = Utils.indexOf(debugLevelsArray, logLevel);
+        Spinner spinnerDebugLevel = findViewById(R.id.spinnerDebugLevel);
+        spinnerDebugLevel.setSelection(logLevelIndex);
+        spinnerDebugLevel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Get the selected item using parent.getItemAtPosition(position)
+                Object selectedItem = parent.getItemAtPosition(position);
+
+                // Check if the selected item is a String (this is what you expect)
+                if (selectedItem instanceof String) {
+                    // Cast the selected item to a String
+                    String selectedDebugLevel = (String) selectedItem;
+                    //Save to preferences
+                    prefs.saveToPreferences("LogLevel", selectedDebugLevel);
+                } else {
+                    // Handle the case where the selected item is not a String
+                    Log.e(TAG, "Selected item is not a String");
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Handle the case where nothing is selected (this might not be relevant for your spinner)
+            }
+        });
+
+        Button buttonDisplayLog = findViewById(R.id.buttonDisplayLog);
+        buttonDisplayLog.setOnClickListener(v -> {
+            boolean reverseLog = (boolean)prefs.retrieveFromPreferences("ReverseLog");
+            String filter = (String)prefs.retrieveFromPreferences("FilterLog");
+            String log = dbHelper.getLogEntriesAsString(reverseLog, filter);
+            if (log != null) {
+                Intent logIntent = new Intent(context, LogDisplay.class);
+                logIntent.putExtra("log", log);
+                logIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(logIntent);
+            } else {
+                Toast.makeText(context, "No log available", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        logFileLimitTextView = findViewById(R.id.logLimitTextView);
+        logFileLimitSeekBar = findViewById(R.id.logLimitSeekBar);
+        int logFileLimit = (int) prefs.retrieveFromPreferences("LogFileLimit");
+        logFileLimitSeekBar.setProgress((int)(logFileLimit));
+        updateSeekbarTextView(logFileLimitTextView, "Log limit: ", logFileLimit, " rows");
+        logFileLimitSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateSeekbarTextView(logFileLimitTextView, "Log limit: ", progress, " rows");
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Not needed
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int value = seekBar.getProgress(); // Convert back to milliseconds
+                prefs.saveToPreferences("LogFileLimit", value);
+            }
+        });
+        ImageButton logLimitImageButton = (ImageButton)findViewById(R.id.logLimitImageButton);
+        logLimitImageButton.setOnClickListener(v -> {
+            showPopup(v, context.getResources().getString(R.string.logLimitHint));
+        });
+
+
         Button buttonReset = findViewById(R.id.buttonReset);
         buttonReset.setOnClickListener(v -> {
             prefs.resetPreferences();
@@ -287,7 +359,6 @@ public class SettingsActivity extends AppCompatActivity {
             buildingsCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowBuildings"));
             trafficCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ShowTraffic"));
             indoorModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("IndoorMode"));
-            debugModeCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("DebugMode"));
             toneOnLocationUpdateCheckBox.setChecked((boolean)prefs.retrieveFromPreferences("ToneOnLocationUpdate"));
 
             int seekbarMillis = (int)(prefs.retrieveFromPreferences("GPSRefreshRateMillis"));
@@ -302,6 +373,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             int seekbarMinutes = (int)(prefs.retrieveFromPreferences("KillAfterMinutes"));
             killAfterSeekBar.setProgress((int)(seekbarMinutes));
+
+            int seekbarRows = (int)(prefs.retrieveFromPreferences("LogFileLimit"));
+            logFileLimitSeekBar.setProgress((int)(seekbarRows));
 
             Toast.makeText(context, "Settings reset to defaults", Toast.LENGTH_SHORT).show();
         });

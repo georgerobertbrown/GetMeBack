@@ -29,6 +29,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.gncbrown.GetMeBack.Utilities.Logger;
+import com.gncbrown.GetMeBack.Utilities.MySQLiteHelper;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -59,6 +61,7 @@ public class PreciseLocationActivity extends AppCompatActivity
 
     private static Context context;
     private static Preferences prefs;
+    private static MySQLiteHelper dbHelper;
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private GoogleMap mMap;
@@ -100,6 +103,7 @@ public class PreciseLocationActivity extends AppCompatActivity
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    dbHelper.appendLogTranscript(context, Logger.LogLevel.Warning, "Closing navigation to save battery.");
                     showKillAlertDialog(context, "Battery Saver", "Closing navigation to save battery.");
                 }
             });
@@ -127,6 +131,8 @@ public class PreciseLocationActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_precise_location);
         prefs = new Preferences(context);
+        dbHelper = MySQLiteHelper.getInstance(this);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "PreciseLocationActivity.onCreate");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             EdgeToEdge.enable(this);
@@ -241,6 +247,9 @@ public class PreciseLocationActivity extends AppCompatActivity
         mMap.clear();
 
         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "PreciseLocationActivity.updateMapWithLocation: currentLatLng="
+                + currentLatLng + ", destinationLatLng=" + destinationLatLng + ", zoomLevel=" + zoomLevel
+                + ", destinationAltitude=" + destinationAltitude + ", location.getAltitude()=" + location.getAltitude());
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(currentLatLng);

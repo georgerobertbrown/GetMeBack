@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.gncbrown.GetMeBack.Utilities.Logger;
+import com.gncbrown.GetMeBack.Utilities.MySQLiteHelper;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -24,6 +26,7 @@ public class GoToActivity extends AppCompatActivity {
 
     private static Context context;
     private static Preferences prefs;
+    private static MySQLiteHelper dbHelper;
 
     private String selectedNavigationMethod = "d";
     private String[] navigationMethods;
@@ -37,6 +40,8 @@ public class GoToActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         context = this;
         prefs = new Preferences(context);
+        dbHelper = MySQLiteHelper.getInstance(this);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "GoToActivity.onCreate");
 
         setContentView(R.layout.activity_go_to);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -60,6 +65,7 @@ public class GoToActivity extends AppCompatActivity {
         destinationLatitude = initialLatLng.latitude;
         destinationLongitude = initialLatLng.longitude;
         destinationAddress = (String)prefs.retrieveFromPreferences("DestinationAddress");
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "GoToActivity.onCreate; destinationAddress=" + destinationAddress);
 
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(context); //GoToActivity.this);
         mBuilder.setTitle("Choose a navigation method to " + destinationAddress);
@@ -102,7 +108,9 @@ public class GoToActivity extends AppCompatActivity {
                 navigationMethod));
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
-        Log.d(TAG, "onLocationChanged: gmmIntentUri=" + gmmIntentUri);
+        String msg = String.format("GoToActivity.launchMaps: gmmIntentUri=%s", gmmIntentUri);
+        Log.d(TAG, msg);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
         startActivity(mapIntent);
     }
 

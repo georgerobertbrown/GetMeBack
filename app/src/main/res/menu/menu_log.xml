@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <item
+        android:id="@+id/searchingGroup"
+        android:title="Searching">
+        <menu>
+            <item
+                android:id="@+id/searchLog"
+                android:icon="@android:drawable/ic_menu_search"
+                android:title="Search" />
+            <item
+                android:id="@+id/filterLog"
+                android:icon="@android:drawable/ic_menu_zoom"
+                android:title="Filter" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/scrollingGroup"
+        android:title="Scrolling">
+        <menu>
+            <item
+                android:id="@+id/topLog"
+                android:icon="@android:drawable/ic_media_previous"
+                android:title="Scroll to top" />
+            <item
+                android:id="@+id/bottomLog"
+                android:icon="@android:drawable/ic_media_next"
+                android:title="Scroll to end" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/logStuffGroup"
+        android:title="Log">
+        <menu>
+            <item
+                android:id="@+id/deleteLog"
+                android:icon="@android:drawable/ic_menu_delete"
+                android:title="Clear log" />
+            <item
+                android:id="@+id/pruneLog"
+                android:icon="@android:drawable/ic_menu_crop"
+                android:title="Prune log" />
+            <item
+                android:id="@+id/refreshLog"
+                android:icon="@android:drawable/ic_menu_sort_alphabetically"
+                android:title="Show log" />
+            <item
+                android:id="@+id/reverseLog"
+                android:icon="@android:drawable/ic_menu_sort_by_size"
+                android:title="Reverse log" />
+            <item
+                android:id="@+id/divider3"
+                android:enabled="false"
+                android:icon="@android:drawable/divider_horizontal_dark"
+                android:title="" />
+            <item
+                android:id="@+id/copyLog"
+                android:icon="@android:drawable/ic_menu_add"
+                android:title="Copy log to clipboard" />
+        </menu>
+    </item>
+</menu>
