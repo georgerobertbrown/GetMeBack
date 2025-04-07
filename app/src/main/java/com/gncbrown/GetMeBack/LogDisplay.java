@@ -1,9 +1,7 @@
 package com.gncbrown.GetMeBack;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -25,7 +23,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -53,11 +50,10 @@ public class LogDisplay extends AppCompatActivity {
 	private LinearLayout findBoxLayout;
 	private Context context = null;
 	private String logContents;
-	private Button closeButton;
 	private EditText findBox;
 	private String findString = null;
 
-	private String title = "Log contents";
+	private String title = "Log";
 	private String type = "showLog";
 
 	private static Preferences prefs;
@@ -127,7 +123,7 @@ public class LogDisplay extends AppCompatActivity {
 
 			default:
 		}
-		prefs.saveToPreferences("LogDisplay", true);
+		prefs.saveToPreferences("FilterLog", "");
 
 		new LoadLogFile().execute();
 		super.onCreate(icicle);
@@ -161,7 +157,7 @@ public class LogDisplay extends AppCompatActivity {
 			logContents = fancyLogContents.toString(); //newLogBuffer.toString();
 
 			title = String.format( (reverseLog ? "Reversed " : "") +
-					"Log contents[" + logEntries + " entries" +
+					"Log [" + logEntries + " entries" +
 					(!"".equals(filter) ? ", filter " + filter : "") + "]");
 			return null;
 		}
@@ -244,10 +240,6 @@ public class LogDisplay extends AppCompatActivity {
 			int height = mWebView.getContentHeight();
 			Log.d(TAG, "scroll to bottom: lines=" + lines + ", height=" + height);
 			mWebView.scrollTo(0, height*lines);
-
-			// TO-DO
-			// REMOVE AFTER DEBUGGING
-//			Utils.moveLogFileToDB(context);
 		} else if (item.getItemId() == R.id.searchLog) {
 			search();
 		} else if (item.getItemId() == R.id.filterLog) {
@@ -386,7 +378,7 @@ public class LogDisplay extends AppCompatActivity {
 							"Press ENTER in text field!", Toast.LENGTH_SHORT).show();
 					findBox.requestFocus();
 				} else {
-					//prefs.saveToPreferences("FilterLog", findString); // TODO save to preferences??
+					prefs.saveToPreferences("FilterLog", findString);
 					new LoadLogFile().execute();
 				}
 			}
@@ -400,9 +392,6 @@ public class LogDisplay extends AppCompatActivity {
 		mWebView.loadUrl("javascript:document.body.style.setProperty(\"color\", "
 				+ (Utils.isDark(context) ? "white" : "black")
 				+ "\";");
-//		mWebView.loadUrl(
-//				"javascript:document.body.style.setProperty(\"background-color\", \"white\");"
-//		);
 	}
 
 }

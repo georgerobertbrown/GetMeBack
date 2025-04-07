@@ -35,13 +35,11 @@ import com.gncbrown.GetMeBack.Utilities.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.model.LatLng;
 
 public class LocationService extends Service implements
@@ -115,7 +113,7 @@ public class LocationService extends Service implements
         context = getBaseContext();
         prefs = new Preferences(context);
         dbHelper = MySQLiteHelper.getInstance(this);
-        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, msg);
 
         navigationMethods = getResources().getStringArray(R.array.navigationMethods);
         if (useLocationBuilder) {

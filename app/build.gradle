@@ -37,7 +37,7 @@ android {
         minSdkVersion 35
         targetSdkVersion 35
         versionCode 4
-        versionName "1.6.1-${currentDatestamp}${currentTimestamp}"
+        versionName "1.6.2-${currentDatestamp}${currentTimestamp}"
 
         multiDexEnabled true
     }

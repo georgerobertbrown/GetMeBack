@@ -28,7 +28,7 @@ public class WatchListenerService extends WearableListenerService {
 
         prefs = new Preferences(this);
         dbHelper = MySQLiteHelper.getInstance(this);
-        dbHelper.appendLogTranscript(this, Logger.LogLevel.Debug, msg);
+        dbHelper.appendLogTranscript(this, Logger.LogLevel.Info, msg);
         if (messageEvent.getPath().contains(SEND_LOCATION_PATH)) {
             String packageName = new String(messageEvent.getData());
             Log.d(TAG, "Package name: " + packageName);

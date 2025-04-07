@@ -56,7 +56,6 @@ import com.gncbrown.GetMeBack.Utilities.MySQLiteHelper;
 import com.gncbrown.GetMeBack.Utilities.NamedLocation;
 import com.gncbrown.GetMeBack.Utilities.Preferences;
 import com.gncbrown.GetMeBack.Utilities.Utils;
-import com.gncbrown.GetMeBack.directionhelpers.TaskLoadedCallback;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationCallback;
@@ -74,7 +73,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -91,8 +89,7 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements
-        OnMapReadyCallback, TaskLoadedCallback,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+    OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
     private static final String TAG = "MainActivity";
 
@@ -207,6 +204,9 @@ public class MainActivity extends AppCompatActivity implements
                             LatLng newPoint = new LatLng(newLatitide, newLongitude);
                             destinationLatitude = newLatitide;
                             destinationLongitude = newLongitude;
+                            dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug,
+                                    "MainActivity.newDestinationResultHandler " + newDestinationAddress
+                                            + " (" + newLatitide + ", " + newLongitude + ").");
                             prefs.saveToPreferences("DestinationLocation", newPoint);
 
                             locationSource = LocationSource.DestinationLocation;
@@ -261,6 +261,9 @@ public class MainActivity extends AppCompatActivity implements
             String location = intent.getStringExtra("location");
             Double latitude = intent.getDoubleExtra("latitude", 0.0);
             Double longitude = intent.getDoubleExtra("longitude", 0.0);
+            String msg = String.format("updateDestinationFromWatchReceiver: action=%s, location=%s (%s, %s)",
+                    action, location, latitude, longitude);
+            dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, msg);
             Log.d(TAG, "updateDestinationFromWatchReceiver: latitude=" + latitude + ", longitude=" + longitude);
 
             if (latitude != 0.0 && longitude != 0.0) {
@@ -303,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements
         prefs = new Preferences(context);
         dbHelper = MySQLiteHelper.getInstance(this);
         logger = new Logger(this);
-        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "MainActivity.onCreate");
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, "MainActivity.onCreate");
 
         bManager = LocalBroadcastManager.getInstance(this);
 
@@ -1023,13 +1026,6 @@ public class MainActivity extends AppCompatActivity implements
         Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, context,
                 addressResultHandler);
         animateMap(restoredLocation, "Address pending");
-    }
-
-    @Override
-    public void onTaskDone(Object... values) {
-        if (currentPolyline != null)
-            currentPolyline.remove();
-        currentPolyline = mGoogleMap.addPolyline((PolylineOptions) values[0]);
     }
 
     private static void progress(boolean show) {

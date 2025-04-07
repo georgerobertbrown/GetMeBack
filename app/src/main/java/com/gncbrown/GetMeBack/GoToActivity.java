@@ -41,7 +41,7 @@ public class GoToActivity extends AppCompatActivity {
         context = this;
         prefs = new Preferences(context);
         dbHelper = MySQLiteHelper.getInstance(this);
-        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "GoToActivity.onCreate");
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Info, "GoToActivity.onCreate");
 
         setContentView(R.layout.activity_go_to);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {

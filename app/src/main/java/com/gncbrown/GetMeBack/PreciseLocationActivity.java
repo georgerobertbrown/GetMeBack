@@ -16,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -233,6 +232,7 @@ public class PreciseLocationActivity extends AppCompatActivity
     }
 
     private void startLocationUpdates() {
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "PreciseLocationActivity.startLocationUpdates");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -240,6 +240,7 @@ public class PreciseLocationActivity extends AppCompatActivity
     }
 
     private void stopLocationUpdates() {
+        dbHelper.appendLogTranscript(context, Logger.LogLevel.Debug, "PreciseLocationActivity.stopLocationUpdates");
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
