@@ -70,21 +70,10 @@ public class ServiceListAdapter extends ArrayAdapter<ServiceInfo> {
 						+ ", checked=" + isChecked);
 				servicesList.get(position).setRunning(isChecked);
 				switch (serviceName) {
-					case "SpeechService":
-//						if (isChecked)
-//							Utils.startSpeechService(context, null);
-//						else
-//							Utils.stopSpeechService(context, "kill");
-
-						Toast.makeText(context, Utils.getAppName(context) + " " + serviceName +
-												(isChecked ? " started." : " stopped."), Toast.LENGTH_SHORT)
-								.show();
-						break;
-
 					case "LocationService":
 						Toast.makeText(context,Utils.getAppName(context)
 										+ " can not " + (isChecked ? "start" : "stop")
-										+ " NotificationsService.",
+										+ " LocationService.",
 								Toast.LENGTH_SHORT).show();
 						break;
 

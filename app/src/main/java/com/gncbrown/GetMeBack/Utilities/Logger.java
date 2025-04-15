@@ -81,8 +81,8 @@ public class Logger {
 				PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 		String channelId = Utils.getAppName(context);
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, channelId)
-				.setSmallIcon(android.R.drawable.ic_btn_speak_now) //R.mipmap.ic_launcher) //R.drawable.icon)
-				.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher)) //R.drawable.icon))
+				.setSmallIcon(android.R.drawable.ic_btn_speak_now)
+				.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
 				.setTicker(title)
 				.setContentTitle(title)
 				.setContentText(message)
@@ -92,12 +92,12 @@ public class Logger {
 				.setDefaults(DEFAULT_SOUND | DEFAULT_VIBRATE)
 				.setPriority(NotificationManager.IMPORTANCE_HIGH);
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		CharSequence name = Utils.getAppName(context) + " notifications"; //"Channel Name";// The user-visible name of the channel.
+		CharSequence name = Utils.getAppName(context) + " notifications";
 		NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
 		mChannel.setShowBadge(true);
 		mChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 		notificationManager.createNotificationChannel(mChannel);
-		notificationManager.notify(reqCode, notificationBuilder.build()); // 0 is the request code, it should be unique id
+		notificationManager.notify(reqCode, notificationBuilder.build());
 
 		Log.d("showNotification", "showNotification: " + reqCode);
 	}
@@ -164,7 +164,7 @@ public class Logger {
 
 		CharSequence msg = dateString + ": " + message;
 
-		Intent intent = new Intent(context, AlertDisplay.class); // IncomingPro.class);
+		Intent intent = new Intent(context, AlertDisplay.class);
 		showNotification(context, from, message, intent, reqCode, importance);
 	}
 
