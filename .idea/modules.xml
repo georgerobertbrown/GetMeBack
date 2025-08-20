@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GetMeBack.iml" filepath="$PROJECT_DIR$/.idea/modules/GetMeBack.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GetMeBack.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GetMeBack.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GetMeBack.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GetMeBack.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GetMeBack.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GetMeBack.app.main.iml" />
