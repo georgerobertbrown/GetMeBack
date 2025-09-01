@@ -104,7 +104,7 @@ public class GoToActivity extends AppCompatActivity {
     }
 
     private void launchMaps(String navigationMethod) {
-        Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
+        Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s&t=p", destinationLatitude, destinationLongitude,
                 navigationMethod));
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");

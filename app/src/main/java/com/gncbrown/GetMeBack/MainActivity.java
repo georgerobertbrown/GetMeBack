@@ -128,10 +128,11 @@ public class MainActivity extends AppCompatActivity implements
     private String navigationMethod = "d";
 
     private static String destinationAddress = null;
+    private static Double destinationLatitude = 0.00;
     private static String homeAddress = "1650 Amphitheatre Pkwy, Mountain View, CA, 94043"; //"4 Frederick Drive, New Hartford, NY";
     public static LatLng home = new LatLng(37.4219983, -122.084); //new LatLng(43.05687, -75.25245);
 
-    private static Double destinationLatitude = 0.00;
+    private static Double destinationAltitude = 0.00;
     private static Double destinationLongitude = 0.00;
     private Double currentLatitude = 0.00;
     private Double currentLongitude = 0.00;
@@ -483,6 +484,7 @@ public class MainActivity extends AppCompatActivity implements
             destinationLatitude = initialLatLng.latitude;
             destinationLongitude = initialLatLng.longitude;
             destinationAddress = (String) prefs.retrieveFromPreferences("DestinationAddress");
+            destinationAltitude = (Double) prefs.retrieveFromPreferences("DestinationAltitude");
 
             Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, context,
                     addressResultHandler);
@@ -541,6 +543,7 @@ public class MainActivity extends AppCompatActivity implements
         destinationAddress = (String) prefs.retrieveFromPreferences("DestinationAddress"); // null;
         homeAddress = (String) prefs.retrieveFromPreferences("HomeAddress");
         home = (LatLng) prefs.retrieveFromPreferences("HomeLocation");
+        destinationAltitude = (Double) prefs.retrieveFromPreferences("DestinationAltitude");
         LatLng latLng = (LatLng) prefs.retrieveFromPreferences("DestinationLocation");
         Log.d(TAG, "onResume: initialLatLng=" + latLng);
 
@@ -902,6 +905,7 @@ public class MainActivity extends AppCompatActivity implements
 
                         destinationLatitude = location.getLatitude();
                         destinationLongitude = location.getLongitude();
+                        destinationAltitude = location.getAltitude();
 
                         LatLng updatedLocation = new LatLng(destinationLatitude, destinationLongitude);
                         String locationString = String.format("%s, %s", destinationLatitude, destinationLongitude);
@@ -989,6 +993,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 destinationLatitude = home.latitude;
                 destinationLongitude = home.longitude;
+                destinationAltitude = 0.0;
                 locationSource = LocationSource.DestinationLocation;
                 progress(false);
                 animateMap(home, destinationAddress);
@@ -1034,8 +1039,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public static String getMarkerLabel() {
+        Log.d(TAG, "getMarkerLabel");
         if (destinationAddress != null && !destinationAddress.equals("???"))
-            return destinationAddress;
+            return destinationAddress.replaceAll(", USA.*", "")
+                    + " ↑" + String.format("%.3f", destinationAltitude);
 
         // Start a handler to translate location to address
         Utils.getAddressFromLocation(destinationLatitude, destinationLongitude, context,
@@ -1071,7 +1078,7 @@ public class MainActivity extends AppCompatActivity implements
                     try {
                         String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0, 1);
                         // Launch maps intent
-                        Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s,&t=p", destinationLatitude, destinationLongitude,
+                        Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s&t=p", destinationLatitude, destinationLongitude,
                                 selectedNavigationMethod));
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");

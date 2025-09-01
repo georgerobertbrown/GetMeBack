@@ -211,7 +211,7 @@ public class LocationService extends Service implements
             public void onClick(DialogInterface dialogInterface, int i) {
                 String selectedNavigationMethod = navigationMethods[i].toLowerCase().substring(0, 1);
                 // Launch maps intent
-                Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s", destinationLatitude, destinationLongitude,
+                Uri gmmIntentUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=%s&t=p", destinationLatitude, destinationLongitude,
                         selectedNavigationMethod));
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");

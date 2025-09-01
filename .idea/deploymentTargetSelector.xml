@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="GetMeBack.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-03-27T02:59:21.949280300Z">
+        <DropdownSelection timestamp="2025-08-31T19:18:08.446974600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=38241FDJG001ZL" />

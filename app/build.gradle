@@ -37,7 +37,7 @@ android {
         minSdkVersion 35
         targetSdkVersion 35
         versionCode 4
-        versionName "1.6.3-${currentDatestamp}${currentTimestamp}"
+        versionName "1.6.4-${currentDatestamp}${currentTimestamp}"
 
         multiDexEnabled true
     }
@@ -69,11 +69,11 @@ dependencies {
     implementation 'com.google.android.gms:play-services-wearable:19.0.0'
 
     testImplementation 'junit:junit:4.13.2'
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.13.1'
 
-    implementation 'com.google.android.gms:play-services-maps:19.1.0'
+    implementation 'com.google.android.gms:play-services-maps:19.2.0'
     implementation 'com.google.android.gms:play-services-location:21.3.0'
-    implementation 'com.karumi:dexter:5.0.0'
+    implementation 'com.karumi:dexter:6.2.3'
     implementation "com.google.android.material:material:1.12.0"
     implementation 'androidx.appcompat:appcompat:1.7.0'
 
